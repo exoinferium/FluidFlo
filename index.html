@@ -20,14 +20,13 @@
       --text-2: #8f9490;
       --text-3: #5a5f5b;
       --green: #4ade80;
-      --green-dim: #166534;
       --red: #f87171;
-      --red-dim: #7f1d1d;
       --yellow: #fbbf24;
-      --yellow-dim: #78350f;
       --teal: #2dd4bf;
+      --blue: #60a5fa;
       --mono: 'DM Mono', monospace;
       --serif: 'Fraunces', Georgia, serif;
+      --sidebar-w: 260px;
     }
 
     body {
@@ -35,33 +34,191 @@
       color: var(--text);
       font-family: var(--mono);
       min-height: 100vh;
-      padding: 0;
+      display: flex;
+      overflow-x: hidden;
     }
 
-    /* Grid background */
     body::before {
       content: '';
       position: fixed;
       inset: 0;
       background-image:
-        linear-gradient(rgba(255,255,255,0.025) 1px, transparent 1px),
-        linear-gradient(90deg, rgba(255,255,255,0.025) 1px, transparent 1px);
+        linear-gradient(rgba(255,255,255,0.018) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(255,255,255,0.018) 1px, transparent 1px);
       background-size: 40px 40px;
       pointer-events: none;
       z-index: 0;
     }
 
-    .page {
-      position: relative;
-      z-index: 1;
-      max-width: 860px;
-      margin: 0 auto;
-      padding: 3rem 2rem 6rem;
+    /* ── Sidebar ── */
+    .sidebar {
+      position: fixed;
+      left: 0; top: 0; bottom: 0;
+      width: var(--sidebar-w);
+      background: var(--surface);
+      border-right: 1px solid var(--border);
+      display: flex;
+      flex-direction: column;
+      z-index: 10;
+      overflow: hidden;
     }
 
-    /* Header */
+    .sidebar-header {
+      padding: 18px 16px 14px;
+      border-bottom: 1px solid var(--border);
+      flex-shrink: 0;
+    }
+
+    .sidebar-header .s-tag {
+      font-size: 9px;
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+      color: var(--teal);
+      margin-bottom: 6px;
+    }
+
+    .sidebar-header h2 {
+      font-family: var(--serif);
+      font-weight: 300;
+      font-size: 1rem;
+      color: var(--text);
+    }
+
+    .sidebar-header p {
+      font-size: 11px;
+      color: var(--text-3);
+      margin-top: 3px;
+    }
+
+    .sidebar-actions {
+      padding: 10px 12px;
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      gap: 6px;
+      flex-shrink: 0;
+    }
+
+    .s-btn {
+      flex: 1;
+      padding: 6px 8px;
+      font-family: var(--mono);
+      font-size: 10px;
+      border-radius: 3px;
+      border: 1px solid var(--border-mid);
+      background: var(--surface-2);
+      color: var(--text-2);
+      cursor: pointer;
+      transition: color 0.15s, border-color 0.15s;
+    }
+
+    .s-btn:hover { color: var(--text); border-color: var(--border-strong); }
+    .s-btn.danger:hover { color: var(--red); border-color: rgba(248,113,113,0.4); }
+
+    .history-list {
+      flex: 1;
+      overflow-y: auto;
+      padding: 8px 0;
+    }
+
+    .history-list::-webkit-scrollbar { width: 4px; }
+    .history-list::-webkit-scrollbar-track { background: transparent; }
+    .history-list::-webkit-scrollbar-thumb { background: var(--surface-3); border-radius: 2px; }
+
+    .history-empty {
+      padding: 2rem 1rem;
+      text-align: center;
+      font-size: 12px;
+      color: var(--text-3);
+      line-height: 1.6;
+    }
+
+    .history-item {
+      padding: 10px 12px;
+      cursor: pointer;
+      border-bottom: 1px solid var(--border);
+      transition: background 0.15s;
+      position: relative;
+    }
+
+    .history-item:hover { background: var(--surface-2); }
+    .history-item.active { background: rgba(45,212,191,0.07); border-left: 2px solid var(--teal); }
+
+    .hi-top {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 5px;
+    }
+
+    .hi-badge {
+      font-size: 9px;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      padding: 2px 7px;
+      border-radius: 2px;
+      font-weight: 500;
+    }
+
+    .hi-badge.normal { background: rgba(74,222,128,0.15); color: var(--green); }
+    .hi-badge.damaged { background: rgba(248,113,113,0.15); color: var(--red); }
+    .hi-badge.uncertain { background: rgba(251,191,36,0.15); color: var(--yellow); }
+
+    .hi-conf { font-size: 10px; color: var(--text-3); }
+
+    .hi-filename {
+      font-size: 11px;
+      color: var(--text-2);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      margin-bottom: 3px;
+    }
+
+    .hi-date { font-size: 10px; color: var(--text-3); }
+
+    .hi-thumb {
+      width: 100%;
+      height: 50px;
+      object-fit: cover;
+      border-radius: 2px;
+      margin-top: 6px;
+      opacity: 0.7;
+      display: block;
+    }
+
+    .hi-delete {
+      position: absolute;
+      top: 8px;
+      right: 8px;
+      width: 18px;
+      height: 18px;
+      background: rgba(248,113,113,0.15);
+      border: none;
+      border-radius: 2px;
+      color: var(--red);
+      cursor: pointer;
+      font-size: 10px;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      line-height: 1;
+    }
+
+    .history-item:hover .hi-delete { display: flex; }
+
+    /* ── Main content ── */
+    .main {
+      margin-left: var(--sidebar-w);
+      flex: 1;
+      position: relative;
+      z-index: 1;
+      padding: 2.5rem 2rem 5rem;
+      max-width: calc(860px + var(--sidebar-w));
+      width: 100%;
+    }
+
     .header {
-      margin-bottom: 3rem;
+      margin-bottom: 2.5rem;
       border-bottom: 1px solid var(--border);
       padding-bottom: 2rem;
     }
@@ -77,294 +234,46 @@
     .header h1 {
       font-family: var(--serif);
       font-weight: 300;
-      font-size: clamp(2rem, 5vw, 3.2rem);
+      font-size: clamp(1.8rem, 4vw, 2.8rem);
       line-height: 1.1;
-      color: var(--text);
       margin-bottom: 0.75rem;
     }
 
-    .header h1 em {
-      font-style: italic;
-      color: var(--teal);
-    }
+    .header h1 em { font-style: italic; color: var(--teal); }
 
-    .header p {
-      font-size: 13px;
-      color: var(--text-2);
-      line-height: 1.7;
-      max-width: 520px;
-    }
+    .header p { font-size: 13px; color: var(--text-2); line-height: 1.7; max-width: 500px; }
 
-    /* Upload area */
-    .upload-section { margin-bottom: 2rem; }
-
+    /* Upload */
     .drop-zone {
       border: 1px dashed var(--border-mid);
       border-radius: 4px;
-      padding: 3.5rem 2rem;
+      padding: 3rem 2rem;
       text-align: center;
       cursor: pointer;
       transition: border-color 0.2s, background 0.2s;
-      position: relative;
-      overflow: hidden;
+      margin-bottom: 1rem;
     }
 
     .drop-zone:hover, .drop-zone.dragover {
       border-color: var(--teal);
-      background: rgba(45, 212, 191, 0.04);
+      background: rgba(45,212,191,0.04);
     }
 
-    .drop-zone-icon {
-      width: 48px;
-      height: 48px;
-      margin: 0 auto 1rem;
+    .drop-icon {
+      width: 44px; height: 44px;
+      margin: 0 auto 12px;
       border: 1px solid var(--border-strong);
       border-radius: 50%;
-      display: flex;
-      align-items: center;
-      justify-content: center;
+      display: flex; align-items: center; justify-content: center;
     }
 
-    .drop-zone-icon svg { color: var(--teal); }
-
-    .drop-zone h3 {
-      font-family: var(--serif);
-      font-weight: 300;
-      font-size: 1.1rem;
-      color: var(--text);
-      margin-bottom: 6px;
-    }
-
-    .drop-zone p {
-      font-size: 12px;
-      color: var(--text-3);
-    }
-
+    .drop-icon svg { color: var(--teal); }
+    .drop-zone h3 { font-family: var(--serif); font-weight: 300; font-size: 1.05rem; margin-bottom: 5px; }
+    .drop-zone p { font-size: 12px; color: var(--text-3); }
     #file-input { display: none; }
 
-    /* Two-col layout */
-    .analysis-layout {
-      display: none;
-      gap: 1.5rem;
-      grid-template-columns: 1fr 1fr;
-    }
-
-    .analysis-layout.visible {
-      display: grid;
-    }
-
-    @media (max-width: 640px) {
-      .analysis-layout { grid-template-columns: 1fr; }
-    }
-
-    /* Image panel */
-    .image-panel {
-      background: var(--surface);
-      border: 1px solid var(--border);
-      border-radius: 4px;
-      overflow: hidden;
-      position: relative;
-    }
-
-    .panel-label {
-      font-size: 10px;
-      letter-spacing: 0.12em;
-      text-transform: uppercase;
-      color: var(--text-3);
-      padding: 10px 14px;
-      border-bottom: 1px solid var(--border);
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-    }
-
-    canvas {
-      width: 100%;
-      display: block;
-    }
-
-    /* Results panel */
-    .results-panel {
-      background: var(--surface);
-      border: 1px solid var(--border);
-      border-radius: 4px;
-      overflow: hidden;
-    }
-
-    /* Verdict */
-    .verdict-block {
-      padding: 1.25rem 1.25rem 1rem;
-      border-bottom: 1px solid var(--border);
-    }
-
-    .verdict-badge {
-      display: inline-block;
-      font-size: 10px;
-      letter-spacing: 0.12em;
-      text-transform: uppercase;
-      padding: 3px 10px;
-      border-radius: 2px;
-      margin-bottom: 10px;
-      font-weight: 500;
-    }
-
-    .badge-normal { background: rgba(74,222,128,0.15); color: var(--green); border: 1px solid rgba(74,222,128,0.3); }
-    .badge-damaged { background: rgba(248,113,113,0.15); color: var(--red); border: 1px solid rgba(248,113,113,0.3); }
-    .badge-uncertain { background: rgba(251,191,36,0.15); color: var(--yellow); border: 1px solid rgba(251,191,36,0.3); }
-
-    .verdict-title {
-      font-family: var(--serif);
-      font-weight: 300;
-      font-size: 1.3rem;
-      line-height: 1.2;
-      color: var(--text);
-    }
-
-    /* Confidence bar */
-    .confidence-block {
-      padding: 1rem 1.25rem;
-      border-bottom: 1px solid var(--border);
-    }
-
-    .conf-row {
-      display: flex;
-      justify-content: space-between;
-      font-size: 11px;
-      color: var(--text-3);
-      margin-bottom: 8px;
-    }
-
-    .conf-row span:last-child { color: var(--text-2); }
-
-    .conf-bar-bg {
-      height: 3px;
-      background: var(--surface-3);
-      border-radius: 2px;
-      overflow: hidden;
-    }
-
-    .conf-bar-fill {
-      height: 100%;
-      border-radius: 2px;
-      width: 0%;
-      transition: width 1s cubic-bezier(0.4, 0, 0.2, 1);
-    }
-
-    .fill-normal { background: var(--green); }
-    .fill-damaged { background: var(--red); }
-    .fill-uncertain { background: var(--yellow); }
-
-    /* Metrics grid */
-    .metrics-grid {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      border-bottom: 1px solid var(--border);
-    }
-
-    .metric-cell {
-      padding: 12px 14px;
-      border-right: 1px solid var(--border);
-      border-bottom: 1px solid var(--border);
-    }
-
-    .metric-cell:nth-child(even) { border-right: none; }
-    .metric-cell:nth-last-child(-n+2) { border-bottom: none; }
-
-    .metric-label {
-      font-size: 10px;
-      color: var(--text-3);
-      letter-spacing: 0.08em;
-      text-transform: uppercase;
-      margin-bottom: 4px;
-    }
-
-    .metric-value {
-      font-size: 16px;
-      font-weight: 500;
-      color: var(--text);
-    }
-
-    .metric-value.danger { color: var(--red); }
-    .metric-value.warn { color: var(--yellow); }
-    .metric-value.ok { color: var(--green); }
-
-    /* Indicators */
-    .indicators-block { padding: 1rem 1.25rem; }
-
-    .indicators-title {
-      font-size: 10px;
-      letter-spacing: 0.12em;
-      text-transform: uppercase;
-      color: var(--text-3);
-      margin-bottom: 10px;
-    }
-
-    .indicator-item {
-      display: flex;
-      gap: 8px;
-      font-size: 12px;
-      color: var(--text-2);
-      line-height: 1.5;
-      margin-bottom: 7px;
-    }
-
-    .indicator-item::before {
-      content: '→';
-      color: var(--teal);
-      flex-shrink: 0;
-      margin-top: 1px;
-    }
-
-    /* Damage score bar */
-    .score-block {
-      padding: 1rem 1.25rem;
-      border-top: 1px solid var(--border);
-    }
-
-    .score-row {
-      display: flex;
-      justify-content: space-between;
-      font-size: 11px;
-      color: var(--text-3);
-      margin-bottom: 8px;
-    }
-
-    .score-track {
-      height: 6px;
-      background: var(--surface-3);
-      border-radius: 3px;
-      overflow: hidden;
-    }
-
-    .score-fill {
-      height: 100%;
-      border-radius: 3px;
-      transition: width 1s cubic-bezier(0.4,0,0.2,1);
-      background: linear-gradient(90deg, var(--green) 0%, var(--yellow) 50%, var(--red) 100%);
-    }
-
-    /* Disclaimer */
-    .disclaimer {
-      margin-top: 2rem;
-      padding: 1rem 1.25rem;
-      border: 1px solid var(--border);
-      border-radius: 4px;
-      background: var(--surface);
-      font-size: 11px;
-      color: var(--text-3);
-      line-height: 1.6;
-      display: none;
-    }
-
-    .disclaimer.visible { display: block; }
-
-    /* Analyze button */
-    .btn-row {
-      margin-top: 1rem;
-      display: none;
-    }
-
-    .btn-row.visible { display: flex; gap: 10px; }
+    .btn-row { display: none; gap: 10px; margin-bottom: 1.5rem; }
+    .btn-row.visible { display: flex; }
 
     .btn {
       padding: 9px 20px;
@@ -380,720 +289,885 @@
 
     .btn:hover { opacity: 0.8; }
     .btn:active { transform: scale(0.97); }
-    .btn:disabled { opacity: 0.35; cursor: not-allowed; transform: none; }
+    .btn:disabled { opacity: 0.3; cursor: not-allowed; transform: none; }
+    .btn-primary { background: rgba(45,212,191,0.12); border-color: rgba(45,212,191,0.35); color: var(--teal); }
 
-    .btn-primary {
-      background: rgba(45, 212, 191, 0.12);
-      border-color: rgba(45, 212, 191, 0.35);
+    /* Analysis layout */
+    .analysis-layout { display: none; gap: 1.25rem; grid-template-columns: 1fr 1fr; margin-bottom: 1.25rem; }
+    .analysis-layout.visible { display: grid; }
+
+    @media (max-width: 700px) {
+      .sidebar { transform: translateX(-100%); }
+      .main { margin-left: 0; }
+      .analysis-layout { grid-template-columns: 1fr; }
+    }
+
+    .panel {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 4px;
+      overflow: hidden;
+    }
+
+    .panel-label {
+      font-size: 10px;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: var(--text-3);
+      padding: 9px 14px;
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    canvas { width: 100%; display: block; background: var(--surface-2); }
+
+    /* Result panels */
+    .verdict-block { padding: 1.1rem 1.1rem 0.9rem; border-bottom: 1px solid var(--border); }
+
+    .verdict-badge {
+      display: inline-block;
+      font-size: 9px;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      padding: 3px 10px;
+      border-radius: 2px;
+      margin-bottom: 8px;
+      font-weight: 500;
+    }
+
+    .badge-normal { background: rgba(74,222,128,0.15); color: var(--green); border: 1px solid rgba(74,222,128,0.25); }
+    .badge-damaged { background: rgba(248,113,113,0.15); color: var(--red); border: 1px solid rgba(248,113,113,0.25); }
+    .badge-uncertain { background: rgba(251,191,36,0.15); color: var(--yellow); border: 1px solid rgba(251,191,36,0.25); }
+
+    .verdict-title { font-family: var(--serif); font-weight: 300; font-size: 1.15rem; }
+
+    .confidence-block { padding: 0.9rem 1.1rem; border-bottom: 1px solid var(--border); }
+    .conf-row { display: flex; justify-content: space-between; font-size: 11px; color: var(--text-3); margin-bottom: 7px; }
+    .conf-row span:last-child { color: var(--text-2); }
+    .conf-bar-bg { height: 3px; background: var(--surface-3); border-radius: 2px; overflow: hidden; }
+    .conf-bar-fill { height: 100%; border-radius: 2px; width: 0%; transition: width 1s cubic-bezier(0.4,0,0.2,1); }
+    .fill-normal { background: var(--green); }
+    .fill-damaged { background: var(--red); }
+    .fill-uncertain { background: var(--yellow); }
+
+    .metrics-grid { display: grid; grid-template-columns: 1fr 1fr; border-bottom: 1px solid var(--border); }
+    .metric-cell { padding: 10px 12px; border-right: 1px solid var(--border); border-bottom: 1px solid var(--border); }
+    .metric-cell:nth-child(even) { border-right: none; }
+    .metric-cell:nth-last-child(-n+2) { border-bottom: none; }
+    .metric-label { font-size: 9px; color: var(--text-3); letter-spacing: 0.08em; text-transform: uppercase; margin-bottom: 3px; }
+    .metric-value { font-size: 15px; font-weight: 500; }
+    .metric-value.danger { color: var(--red); }
+    .metric-value.warn { color: var(--yellow); }
+    .metric-value.ok { color: var(--green); }
+
+    .indicators-block { padding: 0.9rem 1.1rem; }
+    .indicators-title { font-size: 9px; letter-spacing: 0.1em; text-transform: uppercase; color: var(--text-3); margin-bottom: 8px; }
+    .indicator-item { display: flex; gap: 7px; font-size: 11px; color: var(--text-2); line-height: 1.5; margin-bottom: 5px; }
+    .indicator-item::before { content: '→'; color: var(--teal); flex-shrink: 0; }
+
+    .score-block { padding: 0.9rem 1.1rem; border-top: 1px solid var(--border); }
+    .score-row { display: flex; justify-content: space-between; font-size: 11px; color: var(--text-3); margin-bottom: 7px; }
+    .score-track { height: 5px; background: var(--surface-3); border-radius: 3px; overflow: hidden; }
+    .score-fill { height: 100%; border-radius: 3px; transition: width 1s cubic-bezier(0.4,0,0.2,1); background: linear-gradient(90deg, var(--green) 0%, var(--yellow) 50%, var(--red) 100%); }
+
+    .summary-text { padding: 0.9rem 1.1rem; font-size: 11px; color: var(--text-2); line-height: 1.7; border-top: 1px solid var(--border); }
+
+    /* Output image */
+    .output-full { display: none; background: var(--surface); border: 1px solid var(--border); border-radius: 4px; overflow: hidden; margin-bottom: 1.25rem; }
+
+    .disclaimer {
+      display: none;
+      padding: 0.9rem 1.1rem;
+      border: 1px solid var(--border);
+      border-radius: 4px;
+      background: var(--surface);
+      font-size: 11px;
+      color: var(--text-3);
+      line-height: 1.6;
+    }
+
+    .disclaimer.visible { display: block; }
+
+    /* Saved banner */
+    .saved-toast {
+      position: fixed;
+      bottom: 24px;
+      right: 24px;
+      background: rgba(45,212,191,0.15);
+      border: 1px solid rgba(45,212,191,0.35);
       color: var(--teal);
+      font-size: 12px;
+      padding: 8px 16px;
+      border-radius: 3px;
+      opacity: 0;
+      transform: translateY(8px);
+      transition: opacity 0.3s, transform 0.3s;
+      pointer-events: none;
+      z-index: 100;
     }
 
-    .loading-dots {
-      display: inline-flex;
-      gap: 3px;
-      vertical-align: middle;
-    }
+    .saved-toast.show { opacity: 1; transform: translateY(0); }
 
-    .loading-dots span {
-      width: 4px; height: 4px;
-      border-radius: 50%;
-      background: var(--teal);
-      animation: dp 1.2s ease-in-out infinite;
-    }
-
+    .loading-dots { display: inline-flex; gap: 3px; vertical-align: middle; }
+    .loading-dots span { width: 4px; height: 4px; border-radius: 50%; background: var(--teal); animation: dp 1.2s ease-in-out infinite; }
     .loading-dots span:nth-child(2) { animation-delay: 0.2s; }
     .loading-dots span:nth-child(3) { animation-delay: 0.4s; }
+    @keyframes dp { 0%,80%,100% { opacity: 0.2; transform: scale(0.7); } 40% { opacity: 1; transform: scale(1); } }
 
-    @keyframes dp {
-      0%,80%,100% { opacity: 0.2; transform: scale(0.7); }
-      40% { opacity: 1; transform: scale(1); }
+    /* Viewing mode banner */
+    .viewing-banner {
+      display: none;
+      background: rgba(96,165,250,0.1);
+      border: 1px solid rgba(96,165,250,0.25);
+      border-radius: 3px;
+      padding: 8px 14px;
+      font-size: 11px;
+      color: var(--blue);
+      margin-bottom: 1rem;
+      align-items: center;
+      justify-content: space-between;
     }
 
-    .summary-text {
-      padding: 1rem 1.25rem;
-      font-size: 12px;
-      color: var(--text-2);
-      line-height: 1.7;
-      border-top: 1px solid var(--border);
-    }
+    .viewing-banner.visible { display: flex; }
+    .viewing-banner button { background: none; border: none; color: var(--blue); cursor: pointer; font-family: var(--mono); font-size: 11px; text-decoration: underline; }
   </style>
 </head>
 <body>
-  <div class="page">
+
+  <!-- Sidebar -->
+  <aside class="sidebar">
+    <div class="sidebar-header">
+      <h2>Previous Results</h2>
+      <p id="history-count">0 analyses saved</p>
+    </div>
+    <div class="sidebar-actions">
+      <button class="s-btn" onclick="exportHistory()">Export</button>
+      <button class="s-btn danger" onclick="clearHistory()">Clear</button>
+    </div>
+    <div class="history-list" id="history-list">
+      <div class="history-empty">No analyses yet</div>
+    </div>
+  </aside>
+
+  <!-- Main -->
+  <main class="main">
 
     <header class="header">
-      <h1>FluidFlo</h1>
-      <h3>Stomach Tissue Analyzer</h3>
-      <p>Upload an endoscopy image. The analyzer detects redness, dark spots, and texture.</p>
+      <h1>Fluid <em>Flo</em></h1>
+      <h1>Stomach Tissue Analyzer</h1>
+      <p>Upload an endoscopy image. Results are saved locally.</p>
     </header>
 
+    <!-- Viewing mode banner -->
+    <div class="viewing-banner" id="viewing-banner">
+      <span>Viewing saved result</span>
+      <button onclick="exitViewingMode()">← New analysis</button>
+    </div>
+
     <!-- Upload -->
-    <div class="upload-section">
+    <div id="upload-section">
       <div class="drop-zone" id="drop-zone" onclick="document.getElementById('file-input').click()">
-        <div class="drop-zone-icon">
+        <div class="drop-icon">
           <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
             <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4M17 8l-5-5-5 5M12 3v12"/>
           </svg>
         </div>
-        <h3>Upload Image</h3>
+        <h3>Upload Images</h3>
       </div>
       <input type="file" id="file-input" accept="image/*">
-
-      <div class="btn-row" id="btn-row">
-        <button class="btn btn-primary" id="analyze-btn">Run analysis</button>
-        <button class="btn" id="reset-btn">Reset</button>
-      </div>
     </div>
 
-    <!-- Results layout -->
-    <div class="analysis-layout" id="analysis-layout">
+    <div class="btn-row" id="btn-row">
+      <button class="btn btn-primary" id="analyze-btn">Run analysis</button>
+      <button class="btn" id="reset-btn">Reset</button>
+    </div>
 
-      <!-- Left: image canvas -->
-      <div class="image-panel">
-        <div class="panel-label">
-          <span>Input image</span>
-          <span id="img-dims">—</span>
-        </div>
+    <!-- Results -->
+    <div class="analysis-layout" id="analysis-layout">
+      <div class="panel">
+        <div class="panel-label"><span>Input image</span><span id="img-dims">—</span></div>
         <canvas id="input-canvas"></canvas>
       </div>
-
-      <!-- Right: results -->
-      <div class="results-panel" id="results-panel">
-        <div class="panel-label">
-          <span>Analysis result</span>
-          <span id="processing-tag">—</span>
-        </div>
-
+      <div class="panel" id="results-panel">
+        <div class="panel-label"><span>Analysis result</span><span id="processing-tag">—</span></div>
         <div class="verdict-block">
           <div class="verdict-badge" id="verdict-badge">—</div>
           <div class="verdict-title" id="verdict-title">Waiting for analysis...</div>
         </div>
-
         <div class="confidence-block">
-          <div class="conf-row">
-            <span>Confidence</span>
-            <span id="conf-pct">—</span>
-          </div>
-          <div class="conf-bar-bg">
-            <div class="conf-bar-fill" id="conf-fill"></div>
-          </div>
+          <div class="conf-row"><span>Confidence</span><span id="conf-pct">—</span></div>
+          <div class="conf-bar-bg"><div class="conf-bar-fill" id="conf-fill"></div></div>
         </div>
-
         <div class="metrics-grid">
-          <div class="metric-cell">
-            <div class="metric-label">Redness</div>
-            <div class="metric-value" id="m-redness">—</div>
-          </div>
-          <div class="metric-cell">
-            <div class="metric-label">Red regions</div>
-            <div class="metric-value" id="m-red-regions">—</div>
-          </div>
-          <div class="metric-cell">
-            <div class="metric-label">Dark spots</div>
-            <div class="metric-value" id="m-dark">—</div>
-          </div>
-          <div class="metric-cell">
-            <div class="metric-label">Dark regions</div>
-            <div class="metric-value" id="m-dark-regions">—</div>
-          </div>
-          <div class="metric-cell">
-            <div class="metric-label">Edge density</div>
-            <div class="metric-value" id="m-edge">—</div>
-          </div>
-          <div class="metric-cell">
-            <div class="metric-label">Uniformity</div>
-            <div class="metric-value" id="m-uniformity">—</div>
-          </div>
+          <div class="metric-cell"><div class="metric-label">Redness</div><div class="metric-value" id="m-redness">—</div></div>
+          <div class="metric-cell"><div class="metric-label">Red regions</div><div class="metric-value" id="m-red-regions">—</div></div>
+          <div class="metric-cell"><div class="metric-label">Dark spots</div><div class="metric-value" id="m-dark">—</div></div>
+          <div class="metric-cell"><div class="metric-label">Dark regions</div><div class="metric-value" id="m-dark-regions">—</div></div>
+          <div class="metric-cell"><div class="metric-label">Edge density</div><div class="metric-value" id="m-edge">—</div></div>
+          <div class="metric-cell"><div class="metric-label">Uniformity</div><div class="metric-value" id="m-uniformity">—</div></div>
         </div>
-
         <div class="indicators-block">
           <div class="indicators-title">Indicators detected</div>
           <div id="indicators-list"></div>
         </div>
-
         <div class="score-block">
-          <div class="score-row">
-            <span>Damage score</span>
-            <span id="score-val">—/100</span>
-          </div>
-          <div class="score-track">
-            <div class="score-fill" id="score-fill" style="width:0%"></div>
-          </div>
+          <div class="score-row"><span>Damage score</span><span id="score-val">—/100</span></div>
+          <div class="score-track"><div class="score-fill" id="score-fill" style="width:0%"></div></div>
         </div>
-
         <div class="summary-text" id="summary-text"></div>
       </div>
     </div>
 
-    <!-- Annotated output -->
-    <div class="analysis-layout" id="output-layout" style="margin-top:1.5rem;">
-      <div class="image-panel" id="output-panel" style="display:none; grid-column: 1 / -1;">
-        <div class="panel-label">
-          <span>Annotated output</span>
-          <button class="btn" id="download-btn" style="font-size:11px; padding:4px 12px;">Download</button>
-        </div>
-        <canvas id="output-canvas"></canvas>
+    <div class="output-full" id="output-full">
+      <div class="panel-label">
+        <span>Annotated output</span>
+        <button class="btn" id="download-btn" style="font-size:11px;padding:4px 12px;">Download</button>
       </div>
+      <canvas id="output-canvas"></canvas>
     </div>
 
     <div class="disclaimer" id="disclaimer">
-      FluidFlo 2026
+      FluidFlo 2026 - WolfHacks
     </div>
 
-  </div>
+  </main>
+
+  <div class="saved-toast" id="saved-toast">✓ Result saved to history</div>
 
   <script>
-    // ── State ──────────────────────────────────────────
-    let uploadedImage = null;
-    let imageData = null;
-
-    const dropZone = document.getElementById('drop-zone');
-    const fileInput = document.getElementById('file-input');
-    const analyzeBtn = document.getElementById('analyze-btn');
-    const resetBtn = document.getElementById('reset-btn');
-    const btnRow = document.getElementById('btn-row');
-    const analysisLayout = document.getElementById('analysis-layout');
-    const outputPanel = document.getElementById('output-panel');
-    const downloadBtn = document.getElementById('download-btn');
-    const inputCanvas = document.getElementById('input-canvas');
-    const outputCanvas = document.getElementById('output-canvas');
-    const inputCtx = inputCanvas.getContext('2d');
-    const outputCtx = outputCanvas.getContext('2d');
-
-    // ── Upload ──────────────────────────────────────────
-    fileInput.addEventListener('change', e => {
-      if (e.target.files[0]) loadFile(e.target.files[0]);
-    });
-
-    dropZone.addEventListener('dragover', e => { e.preventDefault(); dropZone.classList.add('dragover'); });
-    dropZone.addEventListener('dragleave', () => dropZone.classList.remove('dragover'));
-    dropZone.addEventListener('drop', e => {
-      e.preventDefault();
-      dropZone.classList.remove('dragover');
-      if (e.dataTransfer.files[0]) loadFile(e.dataTransfer.files[0]);
-    });
-
-    resetBtn.addEventListener('click', resetAll);
-
-    function loadFile(file) {
-      if (!file.type.startsWith('image/')) return;
-      const reader = new FileReader();
-      reader.onload = ev => {
-        const img = new Image();
-        img.onload = () => {
-          uploadedImage = img;
-          inputCanvas.width = img.width;
-          inputCanvas.height = img.height;
-          inputCtx.drawImage(img, 0, 0);
-          imageData = inputCtx.getImageData(0, 0, img.width, img.height);
-          document.getElementById('img-dims').textContent = `${img.width}×${img.height}`;
-          dropZone.style.display = 'none';
-          btnRow.classList.add('visible');
-          analysisLayout.classList.add('visible');
-          outputPanel.style.display = 'none';
-          document.getElementById('disclaimer').classList.remove('visible');
-          resetResultsUI();
-        };
-        img.src = ev.target.result;
-      };
-      reader.readAsDataURL(file);
-    }
-
-    function resetAll() {
-      uploadedImage = null; imageData = null;
-      dropZone.style.display = 'block';
-      btnRow.classList.remove('visible');
-      analysisLayout.classList.remove('visible');
-      outputPanel.style.display = 'none';
-      document.getElementById('disclaimer').classList.remove('visible');
-      fileInput.value = '';
-    }
-
-    function resetResultsUI() {
-      document.getElementById('verdict-badge').textContent = '—';
-      document.getElementById('verdict-badge').className = 'verdict-badge';
-      document.getElementById('verdict-title').textContent = 'Waiting for analysis...';
-      document.getElementById('conf-pct').textContent = '—';
-      document.getElementById('conf-fill').style.width = '0%';
-      document.getElementById('conf-fill').className = 'conf-bar-fill';
-      document.getElementById('indicators-list').innerHTML = '';
-      document.getElementById('summary-text').textContent = '';
-      document.getElementById('processing-tag').textContent = '—';
-      ['m-redness','m-red-regions','m-dark','m-dark-regions','m-edge','m-uniformity'].forEach(id => {
-        const el = document.getElementById(id);
-        el.textContent = '—';
-        el.className = 'metric-value';
-      });
-      document.getElementById('score-val').textContent = '—/100';
-      document.getElementById('score-fill').style.width = '0%';
-    }
-
-    // ── Core Analysis (port of Python logic) ──────────
-    analyzeBtn.addEventListener('click', async () => {
-      if (!imageData) return;
-      analyzeBtn.disabled = true;
-      analyzeBtn.innerHTML = 'Analyzing <span class="loading-dots"><span></span><span></span><span></span></span>';
-
-      await sleep(30); // let DOM update
-
-      const w = imageData.width;
-      const h = imageData.height;
-      const data = imageData.data;
-
-      // Convert to HSV array & gray
-      const hsvArr = rgbaToHSV(data, w, h);
-      const grayArr = toGray(data, w, h);
-
-      // 1. Redness detection
-      const redness = detectRedness(hsvArr, w, h);
-
-      // 2. Dark spots
-      const darkSpots = detectDarkSpots(grayArr, w, h);
-
-      // 3. Texture
-      const texture = detectTexture(grayArr, w, h);
-
-      // 4. Uniformity
-      const uniformity = detectUniformity(hsvArr, w, h);
-
-      // 5. Classify
-      const cls = classify(redness, darkSpots, texture, uniformity);
-
-      // 6. Summary
-      const summary = buildSummary(redness, darkSpots, texture, uniformity);
-
-      // 7. Draw annotated image
-      drawAnnotated(redness, darkSpots, cls.verdict, cls.confidence, w, h);
-
-      // 8. Display results
-      displayResults(cls, redness, darkSpots, texture, uniformity, summary);
-
-      analyzeBtn.disabled = false;
-      analyzeBtn.textContent = 'Run analysis';
-      document.getElementById('disclaimer').classList.add('visible');
-      document.getElementById('processing-tag').textContent = 'complete';
-    });
-
-    function sleep(ms) { return new Promise(r => setTimeout(r, ms)); }
-
-    // ── Pixel utilities ─────────────────────────────────
-
-    function rgbaToHSV(data, w, h) {
-      // Returns flat array of [h,s,v] per pixel
-      const out = new Float32Array(w * h * 3);
-      for (let i = 0; i < w * h; i++) {
-        const r = data[i*4] / 255;
-        const g = data[i*4+1] / 255;
-        const b = data[i*4+2] / 255;
-        const max = Math.max(r,g,b), min = Math.min(r,g,b);
-        const d = max - min;
-        let hue = 0;
-        if (d > 0) {
-          if (max === r) hue = ((g - b) / d) % 6;
-          else if (max === g) hue = (b - r) / d + 2;
-          else hue = (r - g) / d + 4;
-          hue = hue * 60;
-          if (hue < 0) hue += 360;
-        }
-        out[i*3]   = hue;
-        out[i*3+1] = max === 0 ? 0 : d / max * 255;
-        out[i*3+2] = max * 255;
-      }
-      return out;
-    }
-
-    function toGray(data, w, h) {
-      const out = new Float32Array(w * h);
-      for (let i = 0; i < w * h; i++) {
-        out[i] = 0.299 * data[i*4] + 0.587 * data[i*4+1] + 0.114 * data[i*4+2];
-      }
-      return out;
-    }
-
-    function gaussianBlur(src, w, h, radius) {
-      // Simple box blur approximation
-      const out = new Float32Array(w * h);
-      const r = Math.floor(radius);
-      for (let y = 0; y < h; y++) {
-        for (let x = 0; x < w; x++) {
-          let sum = 0, cnt = 0;
-          for (let dy = -r; dy <= r; dy++) {
-            for (let dx = -r; dx <= r; dx++) {
-              const nx = x + dx, ny = y + dy;
-              if (nx >= 0 && nx < w && ny >= 0 && ny < h) {
-                sum += src[ny * w + nx];
-                cnt++;
-              }
-            }
-          }
-          out[y * w + x] = sum / cnt;
-        }
-      }
-      return out;
-    }
-
-    // ── Detection functions ──────────────────────────────
-
-    function detectRedness(hsvArr, w, h) {
-      const mask = new Uint8Array(w * h);
-      let redPixels = 0;
-      for (let i = 0; i < w * h; i++) {
-        const hue = hsvArr[i*3];
-        const sat = hsvArr[i*3+1];
-        const val = hsvArr[i*3+2];
-        const isRed = (hue <= 10 || hue >= 160) && sat >= 70 && val >= 50;
-        if (isRed) { mask[i] = 255; redPixels++; }
-      }
-      const redRatio = redPixels / (w * h);
-      const regions = findRegions(mask, w, h, 200);
-      return { redRatio, mask, regions, regionCount: regions.length };
-    }
-
-    function detectDarkSpots(grayArr, w, h) {
-      const blurred = gaussianBlur(grayArr, w, h, 4);
-      const mask = new Uint8Array(w * h);
-      let darkPixels = 0;
-      for (let i = 0; i < w * h; i++) {
-        if (blurred[i] < 40) { mask[i] = 255; darkPixels++; }
-      }
-      // Morphological open (erode then dilate) — simple approximation
-      const eroded = erode(mask, w, h, 2);
-      const opened = dilate(eroded, w, h, 2);
-      let darkCount = 0;
-      for (let i = 0; i < w * h; i++) { if (opened[i]) darkCount++; }
-      const darkRatio = darkCount / (w * h);
-      const regions = findRegions(opened, w, h, 300);
-      return { darkRatio, mask: opened, regions, regionCount: regions.length };
-    }
-
-    function detectTexture(grayArr, w, h) {
-      // Canny-like edge detection (Sobel)
-      const edges = sobelEdges(grayArr, w, h);
-      let edgePixels = 0;
-      const threshold = 30;
-      for (let i = 0; i < edges.length; i++) { if (edges[i] > threshold) edgePixels++; }
-      const edgeRatio = edgePixels / (w * h);
-
-      // Laplacian variance
-      const laplacian = applyLaplacian(grayArr, w, h);
-      const mean = laplacian.reduce((a, b) => a + b, 0) / laplacian.length;
-      const variance = laplacian.reduce((a, b) => a + (b - mean) ** 2, 0) / laplacian.length;
-
-      return { edgeRatio, textureVariance: variance, edges };
-    }
-
-    function detectUniformity(hsvArr, w, h) {
-      let hSum = 0, sSum = 0, hSumSq = 0, sSumSq = 0;
-      const n = w * h;
-      for (let i = 0; i < n; i++) {
-        const hv = hsvArr[i*3];
-        const sv = hsvArr[i*3+1];
-        hSum += hv; hSumSq += hv*hv;
-        sSum += sv; sSumSq += sv*sv;
-      }
-      const hMean = hSum / n;
-      const sMean = sSum / n;
-      const hStd = Math.sqrt(hSumSq / n - hMean * hMean);
-      const sStd = Math.sqrt(sSumSq / n - sMean * sMean);
-      const uniformityScore = Math.max(0, 100 - (hStd + sStd) / 2);
-      return { hueStd: hStd, satStd: sStd, uniformityScore };
-    }
-
-    // ── Image processing helpers ─────────────────────────
-
-    function sobelEdges(gray, w, h) {
-      const out = new Float32Array(w * h);
-      for (let y = 1; y < h - 1; y++) {
-        for (let x = 1; x < w - 1; x++) {
-          const gx =
-            -gray[(y-1)*w+(x-1)] + gray[(y-1)*w+(x+1)]
-            -2*gray[y*w+(x-1)]   + 2*gray[y*w+(x+1)]
-            -gray[(y+1)*w+(x-1)] + gray[(y+1)*w+(x+1)];
-          const gy =
-            -gray[(y-1)*w+(x-1)] -2*gray[(y-1)*w+x] -gray[(y-1)*w+(x+1)]
-            +gray[(y+1)*w+(x-1)] +2*gray[(y+1)*w+x] +gray[(y+1)*w+(x+1)];
-          out[y*w+x] = Math.sqrt(gx*gx + gy*gy);
-        }
-      }
-      return out;
-    }
-
-    function applyLaplacian(gray, w, h) {
-      const out = new Float32Array(w * h);
-      for (let y = 1; y < h - 1; y++) {
-        for (let x = 1; x < w - 1; x++) {
-          out[y*w+x] = Math.abs(
-            -gray[(y-1)*w+x] - gray[(y+1)*w+x]
-            - gray[y*w+(x-1)] - gray[y*w+(x+1)]
-            + 4*gray[y*w+x]
-          );
-        }
-      }
-      return out;
-    }
-
-    function erode(mask, w, h, r) {
-      const out = new Uint8Array(w * h);
-      for (let y = r; y < h - r; y++) {
-        for (let x = r; x < w - r; x++) {
-          let ok = true;
-          outer: for (let dy = -r; dy <= r; dy++) {
-            for (let dx = -r; dx <= r; dx++) {
-              if (!mask[(y+dy)*w+(x+dx)]) { ok = false; break outer; }
-            }
-          }
-          if (ok) out[y*w+x] = 255;
-        }
-      }
-      return out;
-    }
-
-    function dilate(mask, w, h, r) {
-      const out = new Uint8Array(w * h);
-      for (let y = 0; y < h; y++) {
-        for (let x = 0; x < w; x++) {
-          if (!mask[y*w+x]) continue;
-          for (let dy = -r; dy <= r; dy++) {
-            for (let dx = -r; dx <= r; dx++) {
-              const nx = x+dx, ny = y+dy;
-              if (nx >= 0 && nx < w && ny >= 0 && ny < h) out[ny*w+nx] = 255;
-            }
-          }
-        }
-      }
-      return out;
-    }
-
-    function findRegions(mask, w, h, minArea) {
-      // Simple connected-component bounding boxes via flood fill
-      const visited = new Uint8Array(w * h);
-      const regions = [];
-      for (let i = 0; i < w * h; i++) {
-        if (!mask[i] || visited[i]) continue;
-        // BFS
-        const queue = [i];
-        visited[i] = 1;
-        let minX = w, maxX = 0, minY = h, maxY = 0, area = 0;
-        while (queue.length) {
-          const idx = queue.pop();
-          const px = idx % w, py = Math.floor(idx / w);
-          if (px < minX) minX = px; if (px > maxX) maxX = px;
-          if (py < minY) minY = py; if (py > maxY) maxY = py;
-          area++;
-          const neighbors = [idx-1, idx+1, idx-w, idx+w];
-          for (const n of neighbors) {
-            if (n >= 0 && n < w*h && mask[n] && !visited[n]) {
-              visited[n] = 1;
-              queue.push(n);
-            }
-          }
-        }
-        if (area >= minArea) regions.push({ x: minX, y: minY, w: maxX - minX, h: maxY - minY, area });
-      }
-      return regions;
-    }
-
-    // ── Classify ────────────────────────────────────────
-
-    function classify(redness, darkSpots, texture, uniformity) {
-      let damageScore = 0;
-      const indicators = [];
-
-      if (redness.redRatio > 0.25) {
-        damageScore += 35;
-        indicators.push(`High redness (${(redness.redRatio*100).toFixed(1)}% of image) — possible inflammation`);
-      } else if (redness.redRatio > 0.12) {
-        damageScore += 15;
-        indicators.push(`Moderate redness (${(redness.redRatio*100).toFixed(1)}%) — mild irritation possible`);
-      }
-
-      if (redness.regionCount > 5) {
-        damageScore += 10;
-        indicators.push(`${redness.regionCount} distinct red regions detected`);
-      }
-
-      if (darkSpots.darkRatio > 0.15) {
-        damageScore += 30;
-        indicators.push(`Dark spot coverage (${(darkSpots.darkRatio*100).toFixed(1)}%) — possible bleeding or ulcer`);
-      } else if (darkSpots.darkRatio > 0.07) {
-        damageScore += 12;
-        indicators.push(`Minor dark regions (${(darkSpots.darkRatio*100).toFixed(1)}%)`);
-      }
-
-      if (darkSpots.regionCount > 3) {
-        damageScore += 10;
-        indicators.push(`${darkSpots.regionCount} dark lesion-like regions detected`);
-      }
-
-      if (texture.edgeRatio > 0.18) {
-        damageScore += 15;
-        indicators.push('High texture irregularity — possible lesions or polyps');
-      } else if (texture.edgeRatio > 0.10) {
-        damageScore += 5;
-        indicators.push('Moderate texture variation detected');
-      }
-
-      if (uniformity.uniformityScore < 40) {
-        damageScore += 10;
-        indicators.push('Uneven tissue coloration — patchy appearance');
-      }
-
-      let verdict, confidence;
-      if (damageScore >= 45) {
-        verdict = 'damaged';
-        confidence = Math.min(95, 50 + damageScore);
-      } else if (damageScore >= 20) {
-        verdict = 'uncertain';
-        confidence = 50;
-      } else {
-        verdict = 'normal';
-        confidence = Math.min(95, 95 - damageScore * 2);
-      }
-
-      if (!indicators.length) indicators.push('No significant damage indicators detected');
-
-      return { verdict, confidence: Math.round(confidence), damageScore, indicators };
-    }
-
-    function buildSummary(redness, darkSpots, texture, uniformity) {
-      return [
-        `Redness covers ${(redness.redRatio*100).toFixed(1)}% of the image with ${redness.regionCount} distinct region(s).`,
-        `Dark spot coverage is ${(darkSpots.darkRatio*100).toFixed(1)}% (${darkSpots.regionCount} region(s)).`,
-        `Texture irregularity index: ${(texture.edgeRatio*100).toFixed(1)}% edge density, variance ${texture.textureVariance.toFixed(1)}.`,
-        `Color uniformity score: ${uniformity.uniformityScore.toFixed(1)}/100.`
-      ].join(' ');
-    }
-
-    // ── Draw annotated output ─────────────────────────────
-
-    function drawAnnotated(redness, darkSpots, verdict, confidence, w, h) {
-      outputCanvas.width = w;
-      outputCanvas.height = h;
-      outputCtx.drawImage(uploadedImage, 0, 0);
-
-      const colorMap = { normal: '#4ade80', damaged: '#f87171', uncertain: '#fbbf24' };
-      const boxColor = colorMap[verdict] || '#aaa';
-
-      // Red region boxes
-      for (const r of redness.regions) {
-        outputCtx.strokeStyle = '#f87171';
-        outputCtx.lineWidth = Math.max(1, w / 400);
-        outputCtx.strokeRect(r.x, r.y, r.w, r.h);
-        outputCtx.fillStyle = '#f87171';
-        outputCtx.font = `${Math.max(10, w/80)}px DM Mono, monospace`;
-        outputCtx.fillText('Redness', r.x + 2, Math.max(10, r.y - 4));
-      }
-
-      // Dark spot boxes
-      for (const r of darkSpots.regions) {
-        outputCtx.strokeStyle = '#60a5fa';
-        outputCtx.lineWidth = Math.max(1, w / 400);
-        outputCtx.strokeRect(r.x, r.y, r.w, r.h);
-        outputCtx.fillStyle = '#60a5fa';
-        outputCtx.font = `${Math.max(10, w/80)}px DM Mono, monospace`;
-        outputCtx.fillText('Dark spot', r.x + 2, Math.max(10, r.y - 4));
-      }
-
-      // Verdict banner
-      const bannerH = Math.max(28, h * 0.05);
-      outputCtx.fillStyle = boxColor + 'cc';
-      outputCtx.fillRect(0, 0, w, bannerH);
-      outputCtx.fillStyle = '#fff';
-      outputCtx.font = `${Math.max(11, bannerH * 0.45)}px DM Mono, monospace`;
-      outputCtx.fillText(`Verdict: ${verdict.toUpperCase()}  |  Confidence: ${confidence}%`, 10, bannerH * 0.65);
-
-      outputPanel.style.display = 'block';
-    }
-
-    // ── Display results UI ───────────────────────────────
-
-    function displayResults(cls, redness, darkSpots, texture, uniformity, summary) {
-      const { verdict, confidence, damageScore, indicators } = cls;
-
-      const badge = document.getElementById('verdict-badge');
-      const title = document.getElementById('verdict-title');
-      badge.className = 'verdict-badge';
-
-      if (verdict === 'normal') {
-        badge.classList.add('badge-normal');
-        badge.textContent = 'No damage detected';
-        title.textContent = 'Tissue appears healthy';
-      } else if (verdict === 'damaged') {
-        badge.classList.add('badge-damaged');
-        badge.textContent = 'Damage detected';
-        title.textContent = 'Abnormalities found';
-      } else {
-        badge.classList.add('badge-uncertain');
-        badge.textContent = 'Uncertain';
-        title.textContent = 'Further review needed';
-      }
-
-      // Confidence bar
-      document.getElementById('conf-pct').textContent = confidence + '%';
-      const fill = document.getElementById('conf-fill');
-      fill.className = 'conf-bar-fill fill-' + verdict;
-      setTimeout(() => { fill.style.width = confidence + '%'; }, 50);
-
-      // Metrics
-      const rPct = (redness.redRatio * 100).toFixed(1) + '%';
-      const dPct = (darkSpots.darkRatio * 100).toFixed(1) + '%';
-      const ePct = (texture.edgeRatio * 100).toFixed(1) + '%';
-      const uScore = uniformity.uniformityScore.toFixed(0);
-
-      const setMetric = (id, val, thresholds) => {
-        const el = document.getElementById(id);
-        el.textContent = val;
-        el.className = 'metric-value';
-        if (thresholds) {
-          const num = parseFloat(val);
-          if (num >= thresholds[1]) el.classList.add('danger');
-          else if (num >= thresholds[0]) el.classList.add('warn');
-          else el.classList.add('ok');
+  // ══════════════════════════════════════════════════
+  //  IndexedDB setup
+  // ══════════════════════════════════════════════════
+  const DB_NAME = 'StomachAnalyzer';
+  const DB_VERSION = 1;
+  const STORE = 'analyses';
+  let db = null;
+
+  function openDB() {
+    return new Promise((resolve, reject) => {
+      const req = indexedDB.open(DB_NAME, DB_VERSION);
+      req.onupgradeneeded = e => {
+        const d = e.target.result;
+        if (!d.objectStoreNames.contains(STORE)) {
+          const store = d.createObjectStore(STORE, { keyPath: 'id' });
+          store.createIndex('date', 'date', { unique: false });
         }
       };
+      req.onsuccess = e => { db = e.target.result; resolve(db); };
+      req.onerror = () => reject(req.error);
+    });
+  }
 
-      setMetric('m-redness', rPct, [12, 25]);
-      setMetric('m-red-regions', redness.regionCount, [3, 6]);
-      setMetric('m-dark', dPct, [7, 15]);
-      setMetric('m-dark-regions', darkSpots.regionCount, [2, 4]);
-      setMetric('m-edge', ePct, [10, 18]);
+  function dbSave(record) {
+    return new Promise((resolve, reject) => {
+      const tx = db.transaction(STORE, 'readwrite');
+      tx.objectStore(STORE).put(record);
+      tx.oncomplete = resolve;
+      tx.onerror = () => reject(tx.error);
+    });
+  }
 
-      // Uniformity: inverse scale
-      const uEl = document.getElementById('m-uniformity');
-      uEl.textContent = uScore + '/100';
-      uEl.className = 'metric-value';
-      const uNum = parseFloat(uScore);
-      if (uNum < 40) uEl.classList.add('danger');
-      else if (uNum < 60) uEl.classList.add('warn');
-      else uEl.classList.add('ok');
+  function dbGetAll() {
+    return new Promise((resolve, reject) => {
+      const tx = db.transaction(STORE, 'readonly');
+      const req = tx.objectStore(STORE).index('date').getAll();
+      req.onsuccess = () => resolve(req.result.reverse());
+      req.onerror = () => reject(req.error);
+    });
+  }
 
-      // Indicators
-      const list = document.getElementById('indicators-list');
-      list.innerHTML = '';
-      indicators.forEach(ind => {
-        const div = document.createElement('div');
-        div.className = 'indicator-item';
-        div.textContent = ind;
-        list.appendChild(div);
-      });
+  function dbDelete(id) {
+    return new Promise((resolve, reject) => {
+      const tx = db.transaction(STORE, 'readwrite');
+      tx.objectStore(STORE).delete(id);
+      tx.oncomplete = resolve;
+      tx.onerror = () => reject(tx.error);
+    });
+  }
 
-      // Score bar
-      document.getElementById('score-val').textContent = damageScore + '/100';
-      setTimeout(() => {
-        document.getElementById('score-fill').style.width = Math.min(100, damageScore) + '%';
-      }, 50);
+  function dbClear() {
+    return new Promise((resolve, reject) => {
+      const tx = db.transaction(STORE, 'readwrite');
+      tx.objectStore(STORE).clear();
+      tx.oncomplete = resolve;
+      tx.onerror = () => reject(tx.error);
+    });
+  }
 
-      // Summary
-      document.getElementById('summary-text').textContent = summary;
+  // ══════════════════════════════════════════════════
+  //  State
+  // ══════════════════════════════════════════════════
+  let uploadedImage = null;
+  let imageData = null;
+  let currentFilename = '';
+  let viewingMode = false;
+  let activeHistoryId = null;
+
+  const dropZone    = document.getElementById('drop-zone');
+  const fileInput   = document.getElementById('file-input');
+  const analyzeBtn  = document.getElementById('analyze-btn');
+  const resetBtn    = document.getElementById('reset-btn');
+  const btnRow      = document.getElementById('btn-row');
+  const analysisLayout = document.getElementById('analysis-layout');
+  const outputFull  = document.getElementById('output-full');
+  const inputCanvas = document.getElementById('input-canvas');
+  const outputCanvas = document.getElementById('output-canvas');
+  const inputCtx    = inputCanvas.getContext('2d');
+  const outputCtx   = outputCanvas.getContext('2d');
+
+  // ══════════════════════════════════════════════════
+  //  Upload / UI
+  // ══════════════════════════════════════════════════
+  fileInput.addEventListener('change', e => { if (e.target.files[0]) loadFile(e.target.files[0]); });
+  dropZone.addEventListener('dragover', e => { e.preventDefault(); dropZone.classList.add('dragover'); });
+  dropZone.addEventListener('dragleave', () => dropZone.classList.remove('dragover'));
+  dropZone.addEventListener('drop', e => {
+    e.preventDefault(); dropZone.classList.remove('dragover');
+    if (e.dataTransfer.files[0]) loadFile(e.dataTransfer.files[0]);
+  });
+  resetBtn.addEventListener('click', resetAll);
+
+  function loadFile(file) {
+    if (!file.type.startsWith('image/')) return;
+    exitViewingMode();
+    currentFilename = file.name;
+    const reader = new FileReader();
+    reader.onload = ev => {
+      const img = new Image();
+      img.onload = () => {
+        uploadedImage = img;
+        inputCanvas.width = img.width; inputCanvas.height = img.height;
+        inputCtx.drawImage(img, 0, 0);
+        imageData = inputCtx.getImageData(0, 0, img.width, img.height);
+        document.getElementById('img-dims').textContent = `${img.width}×${img.height}`;
+        btnRow.classList.add('visible');
+        analysisLayout.classList.add('visible');
+        outputFull.style.display = 'none';
+        document.getElementById('disclaimer').classList.remove('visible');
+        resetResultsUI();
+      };
+      img.src = ev.target.result;
+    };
+    reader.readAsDataURL(file);
+  }
+
+  function resetAll() {
+    uploadedImage = null; imageData = null; currentFilename = '';
+    btnRow.classList.remove('visible');
+    analysisLayout.classList.remove('visible');
+    outputFull.style.display = 'none';
+    document.getElementById('disclaimer').classList.remove('visible');
+    fileInput.value = '';
+    exitViewingMode();
+  }
+
+  function exitViewingMode() {
+    viewingMode = false;
+    activeHistoryId = null;
+    document.getElementById('viewing-banner').classList.remove('visible');
+    document.querySelectorAll('.history-item').forEach(el => el.classList.remove('active'));
+  }
+
+  function resetResultsUI() {
+    document.getElementById('verdict-badge').textContent = '—';
+    document.getElementById('verdict-badge').className = 'verdict-badge';
+    document.getElementById('verdict-title').textContent = 'Waiting for analysis...';
+    document.getElementById('conf-pct').textContent = '—';
+    document.getElementById('conf-fill').style.width = '0%';
+    document.getElementById('conf-fill').className = 'conf-bar-fill';
+    document.getElementById('indicators-list').innerHTML = '';
+    document.getElementById('summary-text').textContent = '';
+    document.getElementById('processing-tag').textContent = '—';
+    ['m-redness','m-red-regions','m-dark','m-dark-regions','m-edge','m-uniformity'].forEach(id => {
+      const el = document.getElementById(id);
+      el.textContent = '—'; el.className = 'metric-value';
+    });
+    document.getElementById('score-val').textContent = '—/100';
+    document.getElementById('score-fill').style.width = '0%';
+  }
+
+  // ══════════════════════════════════════════════════
+  //  Analysis
+  // ══════════════════════════════════════════════════
+  analyzeBtn.addEventListener('click', async () => {
+    if (!imageData) return;
+    analyzeBtn.disabled = true;
+    analyzeBtn.innerHTML = 'Analyzing <span class="loading-dots"><span></span><span></span><span></span></span>';
+
+    await sleep(30);
+
+    const w = imageData.width, h = imageData.height;
+    const data = imageData.data;
+    const hsvArr = rgbaToHSV(data, w, h);
+    const grayArr = toGray(data, w, h);
+
+    const redness = detectRedness(hsvArr, w, h);
+    const darkSpots = detectDarkSpots(grayArr, w, h);
+    const texture = detectTexture(grayArr, w, h);
+    const uniformity = detectUniformity(hsvArr, w, h);
+    const cls = classify(redness, darkSpots, texture, uniformity);
+    const summary = buildSummary(redness, darkSpots, texture, uniformity);
+
+    drawAnnotated(redness, darkSpots, cls.verdict, cls.confidence, w, h);
+    displayResults(cls, redness, darkSpots, texture, uniformity, summary);
+
+    // Save to DB
+    const thumbnailDataUrl = makeThumbnail(inputCanvas, 240, 80);
+    const annotatedDataUrl = outputCanvas.toDataURL('image/jpeg', 0.85);
+
+    const record = {
+      id: Date.now().toString(),
+      date: Date.now(),
+      filename: currentFilename || 'image',
+      verdict: cls.verdict,
+      confidence: cls.confidence,
+      damageScore: cls.damageScore,
+      indicators: cls.indicators,
+      summary,
+      metrics: {
+        redRatio: +(redness.redRatio*100).toFixed(1),
+        redRegions: redness.regionCount,
+        darkRatio: +(darkSpots.darkRatio*100).toFixed(1),
+        darkRegions: darkSpots.regionCount,
+        edgeRatio: +(texture.edgeRatio*100).toFixed(1),
+        uniformityScore: +uniformity.uniformityScore.toFixed(1),
+      },
+      thumbnail: thumbnailDataUrl,
+      annotated: annotatedDataUrl,
+    };
+
+    await dbSave(record);
+    await refreshHistoryList();
+    showToast('✓ Result saved to history');
+
+    document.getElementById('disclaimer').classList.add('visible');
+    document.getElementById('processing-tag').textContent = 'complete';
+    analyzeBtn.disabled = false;
+    analyzeBtn.textContent = 'Run analysis';
+  });
+
+  function makeThumbnail(canvas, maxW, maxH) {
+    const scale = Math.min(maxW / canvas.width, maxH / canvas.height, 1);
+    const tw = Math.round(canvas.width * scale);
+    const th = Math.round(canvas.height * scale);
+    const tmp = document.createElement('canvas');
+    tmp.width = tw; tmp.height = th;
+    tmp.getContext('2d').drawImage(canvas, 0, 0, tw, th);
+    return tmp.toDataURL('image/jpeg', 0.6);
+  }
+
+  // ══════════════════════════════════════════════════
+  //  History sidebar
+  // ══════════════════════════════════════════════════
+  async function refreshHistoryList() {
+    const records = await dbGetAll();
+    const list = document.getElementById('history-list');
+    document.getElementById('history-count').textContent = `${records.length} analys${records.length === 1 ? 'is' : 'es'} saved`;
+
+    if (!records.length) {
+      list.innerHTML = '<div class="history-empty">No analyses yet.<br>Run your first scan to see results here.</div>';
+      return;
     }
 
-    // ── Download annotated image ─────────────────────────
-    downloadBtn.addEventListener('click', () => {
-      const link = document.createElement('a');
-      link.download = 'detected_stomach.jpg';
-      link.href = outputCanvas.toDataURL('image/jpeg', 0.92);
-      link.click();
+    list.innerHTML = '';
+    records.forEach(r => {
+      const item = document.createElement('div');
+      item.className = 'history-item' + (r.id === activeHistoryId ? ' active' : '');
+      item.dataset.id = r.id;
+
+      const date = new Date(r.date);
+      const dateStr = date.toLocaleDateString(undefined, { month: 'short', day: 'numeric' }) + ' ' +
+                      date.toLocaleTimeString(undefined, { hour: '2-digit', minute: '2-digit' });
+
+      item.innerHTML = `
+        <div class="hi-top">
+          <span class="hi-badge ${r.verdict}">${r.verdict}</span>
+          <span class="hi-conf">${r.confidence}%</span>
+        </div>
+        <div class="hi-filename">${r.filename}</div>
+        <div class="hi-date">${dateStr}</div>
+        ${r.thumbnail ? `<img class="hi-thumb" src="${r.thumbnail}" alt="thumbnail">` : ''}
+        <button class="hi-delete" title="Delete" onclick="deleteRecord(event, '${r.id}')">✕</button>
+      `;
+
+      item.addEventListener('click', () => loadHistoryRecord(r));
+      list.appendChild(item);
     });
+  }
+
+  async function loadHistoryRecord(r) {
+    // Mark as viewing
+    viewingMode = true;
+    activeHistoryId = r.id;
+    document.getElementById('viewing-banner').classList.add('visible');
+    document.querySelectorAll('.history-item').forEach(el => {
+      el.classList.toggle('active', el.dataset.id === r.id);
+    });
+
+    // Show results layout
+    analysisLayout.classList.add('visible');
+    outputFull.style.display = 'block';
+    btnRow.classList.remove('visible');
+    document.getElementById('disclaimer').classList.add('visible');
+
+    // Load input thumbnail into input canvas
+    if (r.thumbnail) {
+      const img = new Image();
+      img.onload = () => {
+        inputCanvas.width = img.width; inputCanvas.height = img.height;
+        inputCtx.drawImage(img, 0, 0);
+        document.getElementById('img-dims').textContent = `${r.filename}`;
+      };
+      img.src = r.thumbnail;
+    }
+
+    // Load annotated image into output canvas
+    if (r.annotated) {
+      const img = new Image();
+      img.onload = () => {
+        outputCanvas.width = img.width; outputCanvas.height = img.height;
+        outputCtx.drawImage(img, 0, 0);
+      };
+      img.src = r.annotated;
+    }
+
+    // Populate results
+    const cls = { verdict: r.verdict, confidence: r.confidence, damageScore: r.damageScore, indicators: r.indicators };
+    const metrics = r.metrics;
+
+    // Verdict
+    const badge = document.getElementById('verdict-badge');
+    const title = document.getElementById('verdict-title');
+    badge.className = 'verdict-badge badge-' + r.verdict;
+    if (r.verdict === 'normal') { badge.textContent = 'No damage detected'; title.textContent = 'Tissue appears healthy'; }
+    else if (r.verdict === 'damaged') { badge.textContent = 'Damage detected'; title.textContent = 'Abnormalities found'; }
+    else { badge.textContent = 'Uncertain'; title.textContent = 'Further review needed'; }
+
+    document.getElementById('conf-pct').textContent = r.confidence + '%';
+    const fill = document.getElementById('conf-fill');
+    fill.className = 'conf-bar-fill fill-' + r.verdict;
+    setTimeout(() => { fill.style.width = r.confidence + '%'; }, 50);
+
+    setMetric('m-redness', metrics.redRatio + '%', [12, 25]);
+    setMetric('m-red-regions', metrics.redRegions, [3, 6]);
+    setMetric('m-dark', metrics.darkRatio + '%', [7, 15]);
+    setMetric('m-dark-regions', metrics.darkRegions, [2, 4]);
+    setMetric('m-edge', metrics.edgeRatio + '%', [10, 18]);
+
+    const uEl = document.getElementById('m-uniformity');
+    uEl.textContent = metrics.uniformityScore + '/100';
+    uEl.className = 'metric-value ' + (metrics.uniformityScore < 40 ? 'danger' : metrics.uniformityScore < 60 ? 'warn' : 'ok');
+
+    const list = document.getElementById('indicators-list');
+    list.innerHTML = '';
+    r.indicators.forEach(ind => {
+      const div = document.createElement('div');
+      div.className = 'indicator-item';
+      div.textContent = ind;
+      list.appendChild(div);
+    });
+
+    document.getElementById('score-val').textContent = r.damageScore + '/100';
+    setTimeout(() => { document.getElementById('score-fill').style.width = Math.min(100, r.damageScore) + '%'; }, 50);
+    document.getElementById('summary-text').textContent = r.summary;
+    document.getElementById('processing-tag').textContent = 'archived';
+  }
+
+  async function deleteRecord(e, id) {
+    e.stopPropagation();
+    await dbDelete(id);
+    if (activeHistoryId === id) resetAll();
+    await refreshHistoryList();
+  }
+
+  async function clearHistory() {
+    if (!confirm('Clear all saved analyses? This cannot be undone.')) return;
+    await dbClear();
+    resetAll();
+    await refreshHistoryList();
+  }
+
+  async function exportHistory() {
+    const records = await dbGetAll();
+    if (!records.length) { alert('No analyses to export.'); return; }
+    const exportData = records.map(r => ({
+      id: r.id,
+      date: new Date(r.date).toISOString(),
+      filename: r.filename,
+      verdict: r.verdict,
+      confidence: r.confidence,
+      damageScore: r.damageScore,
+      indicators: r.indicators,
+      summary: r.summary,
+      metrics: r.metrics,
+    }));
+    const blob = new Blob([JSON.stringify(exportData, null, 2)], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url; a.download = 'stomach_analyses.json'; a.click();
+    URL.revokeObjectURL(url);
+  }
+
+  function showToast(msg) {
+    const t = document.getElementById('saved-toast');
+    t.textContent = msg;
+    t.classList.add('show');
+    setTimeout(() => t.classList.remove('show'), 2500);
+  }
+
+  // ══════════════════════════════════════════════════
+  //  Download annotated image
+  // ══════════════════════════════════════════════════
+  document.getElementById('download-btn').addEventListener('click', () => {
+    const link = document.createElement('a');
+    link.download = 'detected_stomach.jpg';
+    link.href = outputCanvas.toDataURL('image/jpeg', 0.92);
+    link.click();
+  });
+
+  // ══════════════════════════════════════════════════
+  //  Pixel utilities
+  // ══════════════════════════════════════════════════
+  function sleep(ms) { return new Promise(r => setTimeout(r, ms)); }
+
+  function rgbaToHSV(data, w, h) {
+    const out = new Float32Array(w * h * 3);
+    for (let i = 0; i < w * h; i++) {
+      const r = data[i*4]/255, g = data[i*4+1]/255, b = data[i*4+2]/255;
+      const max = Math.max(r,g,b), min = Math.min(r,g,b), d = max - min;
+      let hue = 0;
+      if (d > 0) {
+        if (max === r) hue = ((g-b)/d) % 6;
+        else if (max === g) hue = (b-r)/d + 2;
+        else hue = (r-g)/d + 4;
+        hue = hue * 60;
+        if (hue < 0) hue += 360;
+      }
+      out[i*3] = hue;
+      out[i*3+1] = max === 0 ? 0 : d/max*255;
+      out[i*3+2] = max * 255;
+    }
+    return out;
+  }
+
+  function toGray(data, w, h) {
+    const out = new Float32Array(w * h);
+    for (let i = 0; i < w*h; i++)
+      out[i] = 0.299*data[i*4] + 0.587*data[i*4+1] + 0.114*data[i*4+2];
+    return out;
+  }
+
+  function gaussianBlur(src, w, h, r) {
+    const out = new Float32Array(w * h);
+    for (let y = 0; y < h; y++) for (let x = 0; x < w; x++) {
+      let sum = 0, cnt = 0;
+      for (let dy = -r; dy <= r; dy++) for (let dx = -r; dx <= r; dx++) {
+        const nx = x+dx, ny = y+dy;
+        if (nx >= 0 && nx < w && ny >= 0 && ny < h) { sum += src[ny*w+nx]; cnt++; }
+      }
+      out[y*w+x] = sum / cnt;
+    }
+    return out;
+  }
+
+  function detectRedness(hsvArr, w, h) {
+    const mask = new Uint8Array(w*h); let red = 0;
+    for (let i = 0; i < w*h; i++) {
+      const hue = hsvArr[i*3], sat = hsvArr[i*3+1], val = hsvArr[i*3+2];
+      if ((hue <= 10 || hue >= 160) && sat >= 70 && val >= 50) { mask[i] = 255; red++; }
+    }
+    const regions = findRegions(mask, w, h, 200);
+    return { redRatio: red/(w*h), mask, regions, regionCount: regions.length };
+  }
+
+  function detectDarkSpots(grayArr, w, h) {
+    const blurred = gaussianBlur(grayArr, w, h, 4);
+    const mask = new Uint8Array(w*h); let dark = 0;
+    for (let i = 0; i < w*h; i++) if (blurred[i] < 40) { mask[i] = 255; dark++; }
+    const opened = dilate(erode(mask, w, h, 2), w, h, 2);
+    let dc = 0; for (let i = 0; i < w*h; i++) if (opened[i]) dc++;
+    const regions = findRegions(opened, w, h, 300);
+    return { darkRatio: dc/(w*h), mask: opened, regions, regionCount: regions.length };
+  }
+
+  function detectTexture(grayArr, w, h) {
+    const edges = sobelEdges(grayArr, w, h);
+    let ep = 0;
+    for (let i = 0; i < edges.length; i++) if (edges[i] > 30) ep++;
+    const lap = applyLaplacian(grayArr, w, h);
+    const mean = lap.reduce((a,b) => a+b, 0) / lap.length;
+    const variance = lap.reduce((a,b) => a+(b-mean)**2, 0) / lap.length;
+    return { edgeRatio: ep/(w*h), textureVariance: variance, edges };
+  }
+
+  function detectUniformity(hsvArr, w, h) {
+    let hS=0,sS=0,hSq=0,sSq=0;
+    const n = w*h;
+    for (let i = 0; i < n; i++) {
+      const hv = hsvArr[i*3], sv = hsvArr[i*3+1];
+      hS+=hv; hSq+=hv*hv; sS+=sv; sSq+=sv*sv;
+    }
+    const hM=hS/n, sM=sS/n;
+    const hStd = Math.sqrt(hSq/n - hM*hM);
+    const sStd = Math.sqrt(sSq/n - sM*sM);
+    return { hueStd: hStd, satStd: sStd, uniformityScore: Math.max(0, 100-(hStd+sStd)/2) };
+  }
+
+  function sobelEdges(gray, w, h) {
+    const out = new Float32Array(w*h);
+    for (let y=1;y<h-1;y++) for (let x=1;x<w-1;x++) {
+      const gx = -gray[(y-1)*w+(x-1)] + gray[(y-1)*w+(x+1)] - 2*gray[y*w+(x-1)] + 2*gray[y*w+(x+1)] - gray[(y+1)*w+(x-1)] + gray[(y+1)*w+(x+1)];
+      const gy = -gray[(y-1)*w+(x-1)] - 2*gray[(y-1)*w+x] - gray[(y-1)*w+(x+1)] + gray[(y+1)*w+(x-1)] + 2*gray[(y+1)*w+x] + gray[(y+1)*w+(x+1)];
+      out[y*w+x] = Math.sqrt(gx*gx+gy*gy);
+    }
+    return out;
+  }
+
+  function applyLaplacian(gray, w, h) {
+    const out = new Float32Array(w*h);
+    for (let y=1;y<h-1;y++) for (let x=1;x<w-1;x++)
+      out[y*w+x] = Math.abs(-gray[(y-1)*w+x]-gray[(y+1)*w+x]-gray[y*w+(x-1)]-gray[y*w+(x+1)]+4*gray[y*w+x]);
+    return out;
+  }
+
+  function erode(mask, w, h, r) {
+    const out = new Uint8Array(w*h);
+    for (let y=r;y<h-r;y++) for (let x=r;x<w-r;x++) {
+      let ok = true;
+      outer: for (let dy=-r;dy<=r;dy++) for (let dx=-r;dx<=r;dx++) { if (!mask[(y+dy)*w+(x+dx)]) { ok=false; break outer; } }
+      if (ok) out[y*w+x]=255;
+    }
+    return out;
+  }
+
+  function dilate(mask, w, h, r) {
+    const out = new Uint8Array(w*h);
+    for (let y=0;y<h;y++) for (let x=0;x<w;x++) {
+      if (!mask[y*w+x]) continue;
+      for (let dy=-r;dy<=r;dy++) for (let dx=-r;dx<=r;dx++) {
+        const nx=x+dx, ny=y+dy;
+        if (nx>=0&&nx<w&&ny>=0&&ny<h) out[ny*w+nx]=255;
+      }
+    }
+    return out;
+  }
+
+  function findRegions(mask, w, h, minArea) {
+    const visited = new Uint8Array(w*h), regions = [];
+    for (let i = 0; i < w*h; i++) {
+      if (!mask[i]||visited[i]) continue;
+      const queue=[i]; visited[i]=1;
+      let minX=w,maxX=0,minY=h,maxY=0,area=0;
+      while (queue.length) {
+        const idx=queue.pop(), px=idx%w, py=Math.floor(idx/w);
+        if (px<minX) minX=px; if (px>maxX) maxX=px;
+        if (py<minY) minY=py; if (py>maxY) maxY=py;
+        area++;
+        for (const n of [idx-1,idx+1,idx-w,idx+w]) {
+          if (n>=0&&n<w*h&&mask[n]&&!visited[n]) { visited[n]=1; queue.push(n); }
+        }
+      }
+      if (area>=minArea) regions.push({x:minX,y:minY,w:maxX-minX,h:maxY-minY,area});
+    }
+    return regions;
+  }
+
+  function classify(redness, darkSpots, texture, uniformity) {
+    let damageScore = 0; const indicators = [];
+    if (redness.redRatio>0.25) { damageScore+=35; indicators.push(`High redness (${(redness.redRatio*100).toFixed(1)}% of image) — possible inflammation`); }
+    else if (redness.redRatio>0.12) { damageScore+=15; indicators.push(`Moderate redness (${(redness.redRatio*100).toFixed(1)}%) — mild irritation possible`); }
+    if (redness.regionCount>5) { damageScore+=10; indicators.push(`${redness.regionCount} distinct red regions detected`); }
+    if (darkSpots.darkRatio>0.15) { damageScore+=30; indicators.push(`Dark spot coverage (${(darkSpots.darkRatio*100).toFixed(1)}%) — possible bleeding or ulcer`); }
+    else if (darkSpots.darkRatio>0.07) { damageScore+=12; indicators.push(`Minor dark regions (${(darkSpots.darkRatio*100).toFixed(1)}%)`); }
+    if (darkSpots.regionCount>3) { damageScore+=10; indicators.push(`${darkSpots.regionCount} dark lesion-like regions detected`); }
+    if (texture.edgeRatio>0.18) { damageScore+=15; indicators.push('High texture irregularity — possible lesions or polyps'); }
+    else if (texture.edgeRatio>0.10) { damageScore+=5; indicators.push('Moderate texture variation detected'); }
+    if (uniformity.uniformityScore<40) { damageScore+=10; indicators.push('Uneven tissue coloration — patchy appearance'); }
+    if (!indicators.length) indicators.push('No significant damage indicators detected');
+    let verdict, confidence;
+    if (damageScore>=45) { verdict='damaged'; confidence=Math.min(95,50+damageScore); }
+    else if (damageScore>=20) { verdict='uncertain'; confidence=50; }
+    else { verdict='normal'; confidence=Math.min(95,95-damageScore*2); }
+    return { verdict, confidence: Math.round(confidence), damageScore, indicators };
+  }
+
+  function buildSummary(redness, darkSpots, texture, uniformity) {
+    return [
+      `Redness covers ${(redness.redRatio*100).toFixed(1)}% of the image with ${redness.regionCount} distinct region(s).`,
+      `Dark spot coverage is ${(darkSpots.darkRatio*100).toFixed(1)}% (${darkSpots.regionCount} region(s)).`,
+      `Texture irregularity index: ${(texture.edgeRatio*100).toFixed(1)}% edge density, variance ${texture.textureVariance.toFixed(1)}.`,
+      `Color uniformity score: ${uniformity.uniformityScore.toFixed(1)}/100.`
+    ].join(' ');
+  }
+
+  function drawAnnotated(redness, darkSpots, verdict, confidence, w, h) {
+    outputCanvas.width = w; outputCanvas.height = h;
+    outputCtx.drawImage(uploadedImage, 0, 0);
+    const colorMap = { normal:'#4ade80', damaged:'#f87171', uncertain:'#fbbf24' };
+    const boxColor = colorMap[verdict] || '#aaa';
+    outputCtx.font = `${Math.max(10,w/80)}px DM Mono, monospace`;
+    for (const r of redness.regions) {
+      outputCtx.strokeStyle='#f87171'; outputCtx.lineWidth=Math.max(1,w/400);
+      outputCtx.strokeRect(r.x,r.y,r.w,r.h);
+      outputCtx.fillStyle='#f87171';
+      outputCtx.fillText('Redness',r.x+2,Math.max(10,r.y-4));
+    }
+    for (const r of darkSpots.regions) {
+      outputCtx.strokeStyle='#60a5fa'; outputCtx.lineWidth=Math.max(1,w/400);
+      outputCtx.strokeRect(r.x,r.y,r.w,r.h);
+      outputCtx.fillStyle='#60a5fa';
+      outputCtx.fillText('Dark spot',r.x+2,Math.max(10,r.y-4));
+    }
+    const bh = Math.max(28,h*0.05);
+    outputCtx.fillStyle = boxColor+'cc';
+    outputCtx.fillRect(0,0,w,bh);
+    outputCtx.fillStyle='#fff';
+    outputCtx.font=`${Math.max(11,bh*0.45)}px DM Mono, monospace`;
+    outputCtx.fillText(`Verdict: ${verdict.toUpperCase()}  |  Confidence: ${confidence}%`,10,bh*0.65);
+    outputFull.style.display = 'block';
+  }
+
+  function setMetric(id, val, thresholds) {
+    const el = document.getElementById(id);
+    el.textContent = val; el.className = 'metric-value';
+    if (thresholds) {
+      const num = parseFloat(val);
+      if (num >= thresholds[1]) el.classList.add('danger');
+      else if (num >= thresholds[0]) el.classList.add('warn');
+      else el.classList.add('ok');
+    }
+  }
+
+  function displayResults(cls, redness, darkSpots, texture, uniformity, summary) {
+    const { verdict, confidence, damageScore, indicators } = cls;
+    const badge = document.getElementById('verdict-badge');
+    const title = document.getElementById('verdict-title');
+    badge.className = 'verdict-badge badge-' + verdict;
+    if (verdict==='normal') { badge.textContent='No damage detected'; title.textContent='Tissue appears healthy'; }
+    else if (verdict==='damaged') { badge.textContent='Damage detected'; title.textContent='Abnormalities found'; }
+    else { badge.textContent='Uncertain'; title.textContent='Further review needed'; }
+    document.getElementById('conf-pct').textContent = confidence+'%';
+    const fill = document.getElementById('conf-fill');
+    fill.className = 'conf-bar-fill fill-'+verdict;
+    setTimeout(() => { fill.style.width = confidence+'%'; }, 50);
+    setMetric('m-redness', (redness.redRatio*100).toFixed(1)+'%', [12,25]);
+    setMetric('m-red-regions', redness.regionCount, [3,6]);
+    setMetric('m-dark', (darkSpots.darkRatio*100).toFixed(1)+'%', [7,15]);
+    setMetric('m-dark-regions', darkSpots.regionCount, [2,4]);
+    setMetric('m-edge', (texture.edgeRatio*100).toFixed(1)+'%', [10,18]);
+    const uEl = document.getElementById('m-uniformity');
+    uEl.textContent = uniformity.uniformityScore.toFixed(0)+'/100';
+    uEl.className = 'metric-value ' + (uniformity.uniformityScore<40?'danger':uniformity.uniformityScore<60?'warn':'ok');
+    const list = document.getElementById('indicators-list');
+    list.innerHTML = '';
+    indicators.forEach(ind => { const d=document.createElement('div'); d.className='indicator-item'; d.textContent=ind; list.appendChild(d); });
+    document.getElementById('score-val').textContent = damageScore+'/100';
+    setTimeout(() => { document.getElementById('score-fill').style.width = Math.min(100,damageScore)+'%'; }, 50);
+    document.getElementById('summary-text').textContent = summary;
+  }
+  openDB().then(() => refreshHistoryList()).catch(console.error);
   </script>
 </body>
 </html>
