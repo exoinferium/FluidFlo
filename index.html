@@ -1,0 +1,1100 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Stomach Tissue Analyzer</title>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Fraunces:ital,wght@0,300;0,400;0,600;1,300&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg: #0d0f0e;
+      --surface: #141614;
+      --surface-2: #1c1f1d;
+      --surface-3: #232623;
+      --border: rgba(255,255,255,0.07);
+      --border-mid: rgba(255,255,255,0.12);
+      --border-strong: rgba(255,255,255,0.2);
+      --text: #e8ebe8;
+      --text-2: #8f9490;
+      --text-3: #5a5f5b;
+      --green: #4ade80;
+      --green-dim: #166534;
+      --red: #f87171;
+      --red-dim: #7f1d1d;
+      --yellow: #fbbf24;
+      --yellow-dim: #78350f;
+      --teal: #2dd4bf;
+      --mono: 'DM Mono', monospace;
+      --serif: 'Fraunces', Georgia, serif;
+    }
+
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: var(--mono);
+      min-height: 100vh;
+      padding: 0;
+    }
+
+    /* Grid background */
+    body::before {
+      content: '';
+      position: fixed;
+      inset: 0;
+      background-image:
+        linear-gradient(rgba(255,255,255,0.025) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(255,255,255,0.025) 1px, transparent 1px);
+      background-size: 40px 40px;
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    .page {
+      position: relative;
+      z-index: 1;
+      max-width: 860px;
+      margin: 0 auto;
+      padding: 3rem 2rem 6rem;
+    }
+
+    /* Header */
+    .header {
+      margin-bottom: 3rem;
+      border-bottom: 1px solid var(--border);
+      padding-bottom: 2rem;
+    }
+
+    .header-tag {
+      font-size: 11px;
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+      color: var(--teal);
+      margin-bottom: 0.75rem;
+    }
+
+    .header h1 {
+      font-family: var(--serif);
+      font-weight: 300;
+      font-size: clamp(2rem, 5vw, 3.2rem);
+      line-height: 1.1;
+      color: var(--text);
+      margin-bottom: 0.75rem;
+    }
+
+    .header h1 em {
+      font-style: italic;
+      color: var(--teal);
+    }
+
+    .header p {
+      font-size: 13px;
+      color: var(--text-2);
+      line-height: 1.7;
+      max-width: 520px;
+    }
+
+    /* Upload area */
+    .upload-section { margin-bottom: 2rem; }
+
+    .drop-zone {
+      border: 1px dashed var(--border-mid);
+      border-radius: 4px;
+      padding: 3.5rem 2rem;
+      text-align: center;
+      cursor: pointer;
+      transition: border-color 0.2s, background 0.2s;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .drop-zone:hover, .drop-zone.dragover {
+      border-color: var(--teal);
+      background: rgba(45, 212, 191, 0.04);
+    }
+
+    .drop-zone-icon {
+      width: 48px;
+      height: 48px;
+      margin: 0 auto 1rem;
+      border: 1px solid var(--border-strong);
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .drop-zone-icon svg { color: var(--teal); }
+
+    .drop-zone h3 {
+      font-family: var(--serif);
+      font-weight: 300;
+      font-size: 1.1rem;
+      color: var(--text);
+      margin-bottom: 6px;
+    }
+
+    .drop-zone p {
+      font-size: 12px;
+      color: var(--text-3);
+    }
+
+    #file-input { display: none; }
+
+    /* Two-col layout */
+    .analysis-layout {
+      display: none;
+      gap: 1.5rem;
+      grid-template-columns: 1fr 1fr;
+    }
+
+    .analysis-layout.visible {
+      display: grid;
+    }
+
+    @media (max-width: 640px) {
+      .analysis-layout { grid-template-columns: 1fr; }
+    }
+
+    /* Image panel */
+    .image-panel {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 4px;
+      overflow: hidden;
+      position: relative;
+    }
+
+    .panel-label {
+      font-size: 10px;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: var(--text-3);
+      padding: 10px 14px;
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    canvas {
+      width: 100%;
+      display: block;
+    }
+
+    /* Results panel */
+    .results-panel {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 4px;
+      overflow: hidden;
+    }
+
+    /* Verdict */
+    .verdict-block {
+      padding: 1.25rem 1.25rem 1rem;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .verdict-badge {
+      display: inline-block;
+      font-size: 10px;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      padding: 3px 10px;
+      border-radius: 2px;
+      margin-bottom: 10px;
+      font-weight: 500;
+    }
+
+    .badge-normal { background: rgba(74,222,128,0.15); color: var(--green); border: 1px solid rgba(74,222,128,0.3); }
+    .badge-damaged { background: rgba(248,113,113,0.15); color: var(--red); border: 1px solid rgba(248,113,113,0.3); }
+    .badge-uncertain { background: rgba(251,191,36,0.15); color: var(--yellow); border: 1px solid rgba(251,191,36,0.3); }
+
+    .verdict-title {
+      font-family: var(--serif);
+      font-weight: 300;
+      font-size: 1.3rem;
+      line-height: 1.2;
+      color: var(--text);
+    }
+
+    /* Confidence bar */
+    .confidence-block {
+      padding: 1rem 1.25rem;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .conf-row {
+      display: flex;
+      justify-content: space-between;
+      font-size: 11px;
+      color: var(--text-3);
+      margin-bottom: 8px;
+    }
+
+    .conf-row span:last-child { color: var(--text-2); }
+
+    .conf-bar-bg {
+      height: 3px;
+      background: var(--surface-3);
+      border-radius: 2px;
+      overflow: hidden;
+    }
+
+    .conf-bar-fill {
+      height: 100%;
+      border-radius: 2px;
+      width: 0%;
+      transition: width 1s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    .fill-normal { background: var(--green); }
+    .fill-damaged { background: var(--red); }
+    .fill-uncertain { background: var(--yellow); }
+
+    /* Metrics grid */
+    .metrics-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .metric-cell {
+      padding: 12px 14px;
+      border-right: 1px solid var(--border);
+      border-bottom: 1px solid var(--border);
+    }
+
+    .metric-cell:nth-child(even) { border-right: none; }
+    .metric-cell:nth-last-child(-n+2) { border-bottom: none; }
+
+    .metric-label {
+      font-size: 10px;
+      color: var(--text-3);
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      margin-bottom: 4px;
+    }
+
+    .metric-value {
+      font-size: 16px;
+      font-weight: 500;
+      color: var(--text);
+    }
+
+    .metric-value.danger { color: var(--red); }
+    .metric-value.warn { color: var(--yellow); }
+    .metric-value.ok { color: var(--green); }
+
+    /* Indicators */
+    .indicators-block { padding: 1rem 1.25rem; }
+
+    .indicators-title {
+      font-size: 10px;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: var(--text-3);
+      margin-bottom: 10px;
+    }
+
+    .indicator-item {
+      display: flex;
+      gap: 8px;
+      font-size: 12px;
+      color: var(--text-2);
+      line-height: 1.5;
+      margin-bottom: 7px;
+    }
+
+    .indicator-item::before {
+      content: '→';
+      color: var(--teal);
+      flex-shrink: 0;
+      margin-top: 1px;
+    }
+
+    /* Damage score bar */
+    .score-block {
+      padding: 1rem 1.25rem;
+      border-top: 1px solid var(--border);
+    }
+
+    .score-row {
+      display: flex;
+      justify-content: space-between;
+      font-size: 11px;
+      color: var(--text-3);
+      margin-bottom: 8px;
+    }
+
+    .score-track {
+      height: 6px;
+      background: var(--surface-3);
+      border-radius: 3px;
+      overflow: hidden;
+    }
+
+    .score-fill {
+      height: 100%;
+      border-radius: 3px;
+      transition: width 1s cubic-bezier(0.4,0,0.2,1);
+      background: linear-gradient(90deg, var(--green) 0%, var(--yellow) 50%, var(--red) 100%);
+    }
+
+    /* Disclaimer */
+    .disclaimer {
+      margin-top: 2rem;
+      padding: 1rem 1.25rem;
+      border: 1px solid var(--border);
+      border-radius: 4px;
+      background: var(--surface);
+      font-size: 11px;
+      color: var(--text-3);
+      line-height: 1.6;
+      display: none;
+    }
+
+    .disclaimer.visible { display: block; }
+
+    /* Analyze button */
+    .btn-row {
+      margin-top: 1rem;
+      display: none;
+    }
+
+    .btn-row.visible { display: flex; gap: 10px; }
+
+    .btn {
+      padding: 9px 20px;
+      border-radius: 3px;
+      font-family: var(--mono);
+      font-size: 12px;
+      cursor: pointer;
+      transition: opacity 0.15s, transform 0.1s;
+      border: 1px solid var(--border-mid);
+      background: var(--surface-2);
+      color: var(--text);
+    }
+
+    .btn:hover { opacity: 0.8; }
+    .btn:active { transform: scale(0.97); }
+    .btn:disabled { opacity: 0.35; cursor: not-allowed; transform: none; }
+
+    .btn-primary {
+      background: rgba(45, 212, 191, 0.12);
+      border-color: rgba(45, 212, 191, 0.35);
+      color: var(--teal);
+    }
+
+    .loading-dots {
+      display: inline-flex;
+      gap: 3px;
+      vertical-align: middle;
+    }
+
+    .loading-dots span {
+      width: 4px; height: 4px;
+      border-radius: 50%;
+      background: var(--teal);
+      animation: dp 1.2s ease-in-out infinite;
+    }
+
+    .loading-dots span:nth-child(2) { animation-delay: 0.2s; }
+    .loading-dots span:nth-child(3) { animation-delay: 0.4s; }
+
+    @keyframes dp {
+      0%,80%,100% { opacity: 0.2; transform: scale(0.7); }
+      40% { opacity: 1; transform: scale(1); }
+    }
+
+    .summary-text {
+      padding: 1rem 1.25rem;
+      font-size: 12px;
+      color: var(--text-2);
+      line-height: 1.7;
+      border-top: 1px solid var(--border);
+    }
+  </style>
+</head>
+<body>
+  <div class="page">
+
+    <header class="header">
+      <p class="header-tag">Computer Vision · Local Analysis · No API Required</p>
+      <h1>Stomach Tissue<br><em>Analyzer</em></h1>
+      <p>Upload an endoscopy or gastroscopy image. The analyzer detects redness, dark spots, texture irregularities, and color uniformity — all locally in your browser.</p>
+    </header>
+
+    <!-- Upload -->
+    <div class="upload-section">
+      <div class="drop-zone" id="drop-zone" onclick="document.getElementById('file-input').click()">
+        <div class="drop-zone-icon">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+            <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4M17 8l-5-5-5 5M12 3v12"/>
+          </svg>
+        </div>
+        <h3>Drop image here</h3>
+        <p>or click to browse — JPG, PNG, WEBP, BMP</p>
+      </div>
+      <input type="file" id="file-input" accept="image/*">
+
+      <div class="btn-row" id="btn-row">
+        <button class="btn btn-primary" id="analyze-btn">Run analysis</button>
+        <button class="btn" id="reset-btn">Reset</button>
+      </div>
+    </div>
+
+    <!-- Results layout -->
+    <div class="analysis-layout" id="analysis-layout">
+
+      <!-- Left: image canvas -->
+      <div class="image-panel">
+        <div class="panel-label">
+          <span>Input image</span>
+          <span id="img-dims">—</span>
+        </div>
+        <canvas id="input-canvas"></canvas>
+      </div>
+
+      <!-- Right: results -->
+      <div class="results-panel" id="results-panel">
+        <div class="panel-label">
+          <span>Analysis result</span>
+          <span id="processing-tag">—</span>
+        </div>
+
+        <div class="verdict-block">
+          <div class="verdict-badge" id="verdict-badge">—</div>
+          <div class="verdict-title" id="verdict-title">Waiting for analysis...</div>
+        </div>
+
+        <div class="confidence-block">
+          <div class="conf-row">
+            <span>Confidence</span>
+            <span id="conf-pct">—</span>
+          </div>
+          <div class="conf-bar-bg">
+            <div class="conf-bar-fill" id="conf-fill"></div>
+          </div>
+        </div>
+
+        <div class="metrics-grid">
+          <div class="metric-cell">
+            <div class="metric-label">Redness</div>
+            <div class="metric-value" id="m-redness">—</div>
+          </div>
+          <div class="metric-cell">
+            <div class="metric-label">Red regions</div>
+            <div class="metric-value" id="m-red-regions">—</div>
+          </div>
+          <div class="metric-cell">
+            <div class="metric-label">Dark spots</div>
+            <div class="metric-value" id="m-dark">—</div>
+          </div>
+          <div class="metric-cell">
+            <div class="metric-label">Dark regions</div>
+            <div class="metric-value" id="m-dark-regions">—</div>
+          </div>
+          <div class="metric-cell">
+            <div class="metric-label">Edge density</div>
+            <div class="metric-value" id="m-edge">—</div>
+          </div>
+          <div class="metric-cell">
+            <div class="metric-label">Uniformity</div>
+            <div class="metric-value" id="m-uniformity">—</div>
+          </div>
+        </div>
+
+        <div class="indicators-block">
+          <div class="indicators-title">Indicators detected</div>
+          <div id="indicators-list"></div>
+        </div>
+
+        <div class="score-block">
+          <div class="score-row">
+            <span>Damage score</span>
+            <span id="score-val">—/100</span>
+          </div>
+          <div class="score-track">
+            <div class="score-fill" id="score-fill" style="width:0%"></div>
+          </div>
+        </div>
+
+        <div class="summary-text" id="summary-text"></div>
+      </div>
+    </div>
+
+    <!-- Annotated output -->
+    <div class="analysis-layout" id="output-layout" style="margin-top:1.5rem;">
+      <div class="image-panel" id="output-panel" style="display:none; grid-column: 1 / -1;">
+        <div class="panel-label">
+          <span>Annotated output</span>
+          <button class="btn" id="download-btn" style="font-size:11px; padding:4px 12px;">Download</button>
+        </div>
+        <canvas id="output-canvas"></canvas>
+      </div>
+    </div>
+
+    <div class="disclaimer" id="disclaimer">
+      ⚠ For educational and research purposes only. Not a medical device and must not be used for clinical diagnosis. Always consult a qualified gastroenterologist for medical evaluation.
+    </div>
+
+  </div>
+
+  <script>
+    // ── State ──────────────────────────────────────────
+    let uploadedImage = null;
+    let imageData = null;
+
+    const dropZone = document.getElementById('drop-zone');
+    const fileInput = document.getElementById('file-input');
+    const analyzeBtn = document.getElementById('analyze-btn');
+    const resetBtn = document.getElementById('reset-btn');
+    const btnRow = document.getElementById('btn-row');
+    const analysisLayout = document.getElementById('analysis-layout');
+    const outputPanel = document.getElementById('output-panel');
+    const downloadBtn = document.getElementById('download-btn');
+    const inputCanvas = document.getElementById('input-canvas');
+    const outputCanvas = document.getElementById('output-canvas');
+    const inputCtx = inputCanvas.getContext('2d');
+    const outputCtx = outputCanvas.getContext('2d');
+
+    // ── Upload ──────────────────────────────────────────
+    fileInput.addEventListener('change', e => {
+      if (e.target.files[0]) loadFile(e.target.files[0]);
+    });
+
+    dropZone.addEventListener('dragover', e => { e.preventDefault(); dropZone.classList.add('dragover'); });
+    dropZone.addEventListener('dragleave', () => dropZone.classList.remove('dragover'));
+    dropZone.addEventListener('drop', e => {
+      e.preventDefault();
+      dropZone.classList.remove('dragover');
+      if (e.dataTransfer.files[0]) loadFile(e.dataTransfer.files[0]);
+    });
+
+    resetBtn.addEventListener('click', resetAll);
+
+    function loadFile(file) {
+      if (!file.type.startsWith('image/')) return;
+      const reader = new FileReader();
+      reader.onload = ev => {
+        const img = new Image();
+        img.onload = () => {
+          uploadedImage = img;
+          inputCanvas.width = img.width;
+          inputCanvas.height = img.height;
+          inputCtx.drawImage(img, 0, 0);
+          imageData = inputCtx.getImageData(0, 0, img.width, img.height);
+          document.getElementById('img-dims').textContent = `${img.width}×${img.height}`;
+          dropZone.style.display = 'none';
+          btnRow.classList.add('visible');
+          analysisLayout.classList.add('visible');
+          outputPanel.style.display = 'none';
+          document.getElementById('disclaimer').classList.remove('visible');
+          resetResultsUI();
+        };
+        img.src = ev.target.result;
+      };
+      reader.readAsDataURL(file);
+    }
+
+    function resetAll() {
+      uploadedImage = null; imageData = null;
+      dropZone.style.display = 'block';
+      btnRow.classList.remove('visible');
+      analysisLayout.classList.remove('visible');
+      outputPanel.style.display = 'none';
+      document.getElementById('disclaimer').classList.remove('visible');
+      fileInput.value = '';
+    }
+
+    function resetResultsUI() {
+      document.getElementById('verdict-badge').textContent = '—';
+      document.getElementById('verdict-badge').className = 'verdict-badge';
+      document.getElementById('verdict-title').textContent = 'Waiting for analysis...';
+      document.getElementById('conf-pct').textContent = '—';
+      document.getElementById('conf-fill').style.width = '0%';
+      document.getElementById('conf-fill').className = 'conf-bar-fill';
+      document.getElementById('indicators-list').innerHTML = '';
+      document.getElementById('summary-text').textContent = '';
+      document.getElementById('processing-tag').textContent = '—';
+      ['m-redness','m-red-regions','m-dark','m-dark-regions','m-edge','m-uniformity'].forEach(id => {
+        const el = document.getElementById(id);
+        el.textContent = '—';
+        el.className = 'metric-value';
+      });
+      document.getElementById('score-val').textContent = '—/100';
+      document.getElementById('score-fill').style.width = '0%';
+    }
+
+    // ── Core Analysis (port of Python logic) ──────────
+    analyzeBtn.addEventListener('click', async () => {
+      if (!imageData) return;
+      analyzeBtn.disabled = true;
+      analyzeBtn.innerHTML = 'Analyzing <span class="loading-dots"><span></span><span></span><span></span></span>';
+
+      await sleep(30); // let DOM update
+
+      const w = imageData.width;
+      const h = imageData.height;
+      const data = imageData.data;
+
+      // Convert to HSV array & gray
+      const hsvArr = rgbaToHSV(data, w, h);
+      const grayArr = toGray(data, w, h);
+
+      // 1. Redness detection
+      const redness = detectRedness(hsvArr, w, h);
+
+      // 2. Dark spots
+      const darkSpots = detectDarkSpots(grayArr, w, h);
+
+      // 3. Texture
+      const texture = detectTexture(grayArr, w, h);
+
+      // 4. Uniformity
+      const uniformity = detectUniformity(hsvArr, w, h);
+
+      // 5. Classify
+      const cls = classify(redness, darkSpots, texture, uniformity);
+
+      // 6. Summary
+      const summary = buildSummary(redness, darkSpots, texture, uniformity);
+
+      // 7. Draw annotated image
+      drawAnnotated(redness, darkSpots, cls.verdict, cls.confidence, w, h);
+
+      // 8. Display results
+      displayResults(cls, redness, darkSpots, texture, uniformity, summary);
+
+      analyzeBtn.disabled = false;
+      analyzeBtn.textContent = 'Run analysis';
+      document.getElementById('disclaimer').classList.add('visible');
+      document.getElementById('processing-tag').textContent = 'complete';
+    });
+
+    function sleep(ms) { return new Promise(r => setTimeout(r, ms)); }
+
+    // ── Pixel utilities ─────────────────────────────────
+
+    function rgbaToHSV(data, w, h) {
+      // Returns flat array of [h,s,v] per pixel
+      const out = new Float32Array(w * h * 3);
+      for (let i = 0; i < w * h; i++) {
+        const r = data[i*4] / 255;
+        const g = data[i*4+1] / 255;
+        const b = data[i*4+2] / 255;
+        const max = Math.max(r,g,b), min = Math.min(r,g,b);
+        const d = max - min;
+        let hue = 0;
+        if (d > 0) {
+          if (max === r) hue = ((g - b) / d) % 6;
+          else if (max === g) hue = (b - r) / d + 2;
+          else hue = (r - g) / d + 4;
+          hue = hue * 60;
+          if (hue < 0) hue += 360;
+        }
+        out[i*3]   = hue;
+        out[i*3+1] = max === 0 ? 0 : d / max * 255;
+        out[i*3+2] = max * 255;
+      }
+      return out;
+    }
+
+    function toGray(data, w, h) {
+      const out = new Float32Array(w * h);
+      for (let i = 0; i < w * h; i++) {
+        out[i] = 0.299 * data[i*4] + 0.587 * data[i*4+1] + 0.114 * data[i*4+2];
+      }
+      return out;
+    }
+
+    function gaussianBlur(src, w, h, radius) {
+      // Simple box blur approximation
+      const out = new Float32Array(w * h);
+      const r = Math.floor(radius);
+      for (let y = 0; y < h; y++) {
+        for (let x = 0; x < w; x++) {
+          let sum = 0, cnt = 0;
+          for (let dy = -r; dy <= r; dy++) {
+            for (let dx = -r; dx <= r; dx++) {
+              const nx = x + dx, ny = y + dy;
+              if (nx >= 0 && nx < w && ny >= 0 && ny < h) {
+                sum += src[ny * w + nx];
+                cnt++;
+              }
+            }
+          }
+          out[y * w + x] = sum / cnt;
+        }
+      }
+      return out;
+    }
+
+    // ── Detection functions ──────────────────────────────
+
+    function detectRedness(hsvArr, w, h) {
+      const mask = new Uint8Array(w * h);
+      let redPixels = 0;
+      for (let i = 0; i < w * h; i++) {
+        const hue = hsvArr[i*3];
+        const sat = hsvArr[i*3+1];
+        const val = hsvArr[i*3+2];
+        const isRed = (hue <= 10 || hue >= 160) && sat >= 70 && val >= 50;
+        if (isRed) { mask[i] = 255; redPixels++; }
+      }
+      const redRatio = redPixels / (w * h);
+      const regions = findRegions(mask, w, h, 200);
+      return { redRatio, mask, regions, regionCount: regions.length };
+    }
+
+    function detectDarkSpots(grayArr, w, h) {
+      const blurred = gaussianBlur(grayArr, w, h, 4);
+      const mask = new Uint8Array(w * h);
+      let darkPixels = 0;
+      for (let i = 0; i < w * h; i++) {
+        if (blurred[i] < 40) { mask[i] = 255; darkPixels++; }
+      }
+      // Morphological open (erode then dilate) — simple approximation
+      const eroded = erode(mask, w, h, 2);
+      const opened = dilate(eroded, w, h, 2);
+      let darkCount = 0;
+      for (let i = 0; i < w * h; i++) { if (opened[i]) darkCount++; }
+      const darkRatio = darkCount / (w * h);
+      const regions = findRegions(opened, w, h, 300);
+      return { darkRatio, mask: opened, regions, regionCount: regions.length };
+    }
+
+    function detectTexture(grayArr, w, h) {
+      // Canny-like edge detection (Sobel)
+      const edges = sobelEdges(grayArr, w, h);
+      let edgePixels = 0;
+      const threshold = 30;
+      for (let i = 0; i < edges.length; i++) { if (edges[i] > threshold) edgePixels++; }
+      const edgeRatio = edgePixels / (w * h);
+
+      // Laplacian variance
+      const laplacian = applyLaplacian(grayArr, w, h);
+      const mean = laplacian.reduce((a, b) => a + b, 0) / laplacian.length;
+      const variance = laplacian.reduce((a, b) => a + (b - mean) ** 2, 0) / laplacian.length;
+
+      return { edgeRatio, textureVariance: variance, edges };
+    }
+
+    function detectUniformity(hsvArr, w, h) {
+      let hSum = 0, sSum = 0, hSumSq = 0, sSumSq = 0;
+      const n = w * h;
+      for (let i = 0; i < n; i++) {
+        const hv = hsvArr[i*3];
+        const sv = hsvArr[i*3+1];
+        hSum += hv; hSumSq += hv*hv;
+        sSum += sv; sSumSq += sv*sv;
+      }
+      const hMean = hSum / n;
+      const sMean = sSum / n;
+      const hStd = Math.sqrt(hSumSq / n - hMean * hMean);
+      const sStd = Math.sqrt(sSumSq / n - sMean * sMean);
+      const uniformityScore = Math.max(0, 100 - (hStd + sStd) / 2);
+      return { hueStd: hStd, satStd: sStd, uniformityScore };
+    }
+
+    // ── Image processing helpers ─────────────────────────
+
+    function sobelEdges(gray, w, h) {
+      const out = new Float32Array(w * h);
+      for (let y = 1; y < h - 1; y++) {
+        for (let x = 1; x < w - 1; x++) {
+          const gx =
+            -gray[(y-1)*w+(x-1)] + gray[(y-1)*w+(x+1)]
+            -2*gray[y*w+(x-1)]   + 2*gray[y*w+(x+1)]
+            -gray[(y+1)*w+(x-1)] + gray[(y+1)*w+(x+1)];
+          const gy =
+            -gray[(y-1)*w+(x-1)] -2*gray[(y-1)*w+x] -gray[(y-1)*w+(x+1)]
+            +gray[(y+1)*w+(x-1)] +2*gray[(y+1)*w+x] +gray[(y+1)*w+(x+1)];
+          out[y*w+x] = Math.sqrt(gx*gx + gy*gy);
+        }
+      }
+      return out;
+    }
+
+    function applyLaplacian(gray, w, h) {
+      const out = new Float32Array(w * h);
+      for (let y = 1; y < h - 1; y++) {
+        for (let x = 1; x < w - 1; x++) {
+          out[y*w+x] = Math.abs(
+            -gray[(y-1)*w+x] - gray[(y+1)*w+x]
+            - gray[y*w+(x-1)] - gray[y*w+(x+1)]
+            + 4*gray[y*w+x]
+          );
+        }
+      }
+      return out;
+    }
+
+    function erode(mask, w, h, r) {
+      const out = new Uint8Array(w * h);
+      for (let y = r; y < h - r; y++) {
+        for (let x = r; x < w - r; x++) {
+          let ok = true;
+          outer: for (let dy = -r; dy <= r; dy++) {
+            for (let dx = -r; dx <= r; dx++) {
+              if (!mask[(y+dy)*w+(x+dx)]) { ok = false; break outer; }
+            }
+          }
+          if (ok) out[y*w+x] = 255;
+        }
+      }
+      return out;
+    }
+
+    function dilate(mask, w, h, r) {
+      const out = new Uint8Array(w * h);
+      for (let y = 0; y < h; y++) {
+        for (let x = 0; x < w; x++) {
+          if (!mask[y*w+x]) continue;
+          for (let dy = -r; dy <= r; dy++) {
+            for (let dx = -r; dx <= r; dx++) {
+              const nx = x+dx, ny = y+dy;
+              if (nx >= 0 && nx < w && ny >= 0 && ny < h) out[ny*w+nx] = 255;
+            }
+          }
+        }
+      }
+      return out;
+    }
+
+    function findRegions(mask, w, h, minArea) {
+      // Simple connected-component bounding boxes via flood fill
+      const visited = new Uint8Array(w * h);
+      const regions = [];
+      for (let i = 0; i < w * h; i++) {
+        if (!mask[i] || visited[i]) continue;
+        // BFS
+        const queue = [i];
+        visited[i] = 1;
+        let minX = w, maxX = 0, minY = h, maxY = 0, area = 0;
+        while (queue.length) {
+          const idx = queue.pop();
+          const px = idx % w, py = Math.floor(idx / w);
+          if (px < minX) minX = px; if (px > maxX) maxX = px;
+          if (py < minY) minY = py; if (py > maxY) maxY = py;
+          area++;
+          const neighbors = [idx-1, idx+1, idx-w, idx+w];
+          for (const n of neighbors) {
+            if (n >= 0 && n < w*h && mask[n] && !visited[n]) {
+              visited[n] = 1;
+              queue.push(n);
+            }
+          }
+        }
+        if (area >= minArea) regions.push({ x: minX, y: minY, w: maxX - minX, h: maxY - minY, area });
+      }
+      return regions;
+    }
+
+    // ── Classify ────────────────────────────────────────
+
+    function classify(redness, darkSpots, texture, uniformity) {
+      let damageScore = 0;
+      const indicators = [];
+
+      if (redness.redRatio > 0.25) {
+        damageScore += 35;
+        indicators.push(`High redness (${(redness.redRatio*100).toFixed(1)}% of image) — possible inflammation`);
+      } else if (redness.redRatio > 0.12) {
+        damageScore += 15;
+        indicators.push(`Moderate redness (${(redness.redRatio*100).toFixed(1)}%) — mild irritation possible`);
+      }
+
+      if (redness.regionCount > 5) {
+        damageScore += 10;
+        indicators.push(`${redness.regionCount} distinct red regions detected`);
+      }
+
+      if (darkSpots.darkRatio > 0.15) {
+        damageScore += 30;
+        indicators.push(`Dark spot coverage (${(darkSpots.darkRatio*100).toFixed(1)}%) — possible bleeding or ulcer`);
+      } else if (darkSpots.darkRatio > 0.07) {
+        damageScore += 12;
+        indicators.push(`Minor dark regions (${(darkSpots.darkRatio*100).toFixed(1)}%)`);
+      }
+
+      if (darkSpots.regionCount > 3) {
+        damageScore += 10;
+        indicators.push(`${darkSpots.regionCount} dark lesion-like regions detected`);
+      }
+
+      if (texture.edgeRatio > 0.18) {
+        damageScore += 15;
+        indicators.push('High texture irregularity — possible lesions or polyps');
+      } else if (texture.edgeRatio > 0.10) {
+        damageScore += 5;
+        indicators.push('Moderate texture variation detected');
+      }
+
+      if (uniformity.uniformityScore < 40) {
+        damageScore += 10;
+        indicators.push('Uneven tissue coloration — patchy appearance');
+      }
+
+      let verdict, confidence;
+      if (damageScore >= 45) {
+        verdict = 'damaged';
+        confidence = Math.min(95, 50 + damageScore);
+      } else if (damageScore >= 20) {
+        verdict = 'uncertain';
+        confidence = 50;
+      } else {
+        verdict = 'normal';
+        confidence = Math.min(95, 95 - damageScore * 2);
+      }
+
+      if (!indicators.length) indicators.push('No significant damage indicators detected');
+
+      return { verdict, confidence: Math.round(confidence), damageScore, indicators };
+    }
+
+    function buildSummary(redness, darkSpots, texture, uniformity) {
+      return [
+        `Redness covers ${(redness.redRatio*100).toFixed(1)}% of the image with ${redness.regionCount} distinct region(s).`,
+        `Dark spot coverage is ${(darkSpots.darkRatio*100).toFixed(1)}% (${darkSpots.regionCount} region(s)).`,
+        `Texture irregularity index: ${(texture.edgeRatio*100).toFixed(1)}% edge density, variance ${texture.textureVariance.toFixed(1)}.`,
+        `Color uniformity score: ${uniformity.uniformityScore.toFixed(1)}/100.`
+      ].join(' ');
+    }
+
+    // ── Draw annotated output ─────────────────────────────
+
+    function drawAnnotated(redness, darkSpots, verdict, confidence, w, h) {
+      outputCanvas.width = w;
+      outputCanvas.height = h;
+      outputCtx.drawImage(uploadedImage, 0, 0);
+
+      const colorMap = { normal: '#4ade80', damaged: '#f87171', uncertain: '#fbbf24' };
+      const boxColor = colorMap[verdict] || '#aaa';
+
+      // Red region boxes
+      for (const r of redness.regions) {
+        outputCtx.strokeStyle = '#f87171';
+        outputCtx.lineWidth = Math.max(1, w / 400);
+        outputCtx.strokeRect(r.x, r.y, r.w, r.h);
+        outputCtx.fillStyle = '#f87171';
+        outputCtx.font = `${Math.max(10, w/80)}px DM Mono, monospace`;
+        outputCtx.fillText('Redness', r.x + 2, Math.max(10, r.y - 4));
+      }
+
+      // Dark spot boxes
+      for (const r of darkSpots.regions) {
+        outputCtx.strokeStyle = '#60a5fa';
+        outputCtx.lineWidth = Math.max(1, w / 400);
+        outputCtx.strokeRect(r.x, r.y, r.w, r.h);
+        outputCtx.fillStyle = '#60a5fa';
+        outputCtx.font = `${Math.max(10, w/80)}px DM Mono, monospace`;
+        outputCtx.fillText('Dark spot', r.x + 2, Math.max(10, r.y - 4));
+      }
+
+      // Verdict banner
+      const bannerH = Math.max(28, h * 0.05);
+      outputCtx.fillStyle = boxColor + 'cc';
+      outputCtx.fillRect(0, 0, w, bannerH);
+      outputCtx.fillStyle = '#fff';
+      outputCtx.font = `${Math.max(11, bannerH * 0.45)}px DM Mono, monospace`;
+      outputCtx.fillText(`Verdict: ${verdict.toUpperCase()}  |  Confidence: ${confidence}%`, 10, bannerH * 0.65);
+
+      outputPanel.style.display = 'block';
+    }
+
+    // ── Display results UI ───────────────────────────────
+
+    function displayResults(cls, redness, darkSpots, texture, uniformity, summary) {
+      const { verdict, confidence, damageScore, indicators } = cls;
+
+      const badge = document.getElementById('verdict-badge');
+      const title = document.getElementById('verdict-title');
+      badge.className = 'verdict-badge';
+
+      if (verdict === 'normal') {
+        badge.classList.add('badge-normal');
+        badge.textContent = 'No damage detected';
+        title.textContent = 'Tissue appears healthy';
+      } else if (verdict === 'damaged') {
+        badge.classList.add('badge-damaged');
+        badge.textContent = 'Damage detected';
+        title.textContent = 'Abnormalities found';
+      } else {
+        badge.classList.add('badge-uncertain');
+        badge.textContent = 'Uncertain';
+        title.textContent = 'Further review needed';
+      }
+
+      // Confidence bar
+      document.getElementById('conf-pct').textContent = confidence + '%';
+      const fill = document.getElementById('conf-fill');
+      fill.className = 'conf-bar-fill fill-' + verdict;
+      setTimeout(() => { fill.style.width = confidence + '%'; }, 50);
+
+      // Metrics
+      const rPct = (redness.redRatio * 100).toFixed(1) + '%';
+      const dPct = (darkSpots.darkRatio * 100).toFixed(1) + '%';
+      const ePct = (texture.edgeRatio * 100).toFixed(1) + '%';
+      const uScore = uniformity.uniformityScore.toFixed(0);
+
+      const setMetric = (id, val, thresholds) => {
+        const el = document.getElementById(id);
+        el.textContent = val;
+        el.className = 'metric-value';
+        if (thresholds) {
+          const num = parseFloat(val);
+          if (num >= thresholds[1]) el.classList.add('danger');
+          else if (num >= thresholds[0]) el.classList.add('warn');
+          else el.classList.add('ok');
+        }
+      };
+
+      setMetric('m-redness', rPct, [12, 25]);
+      setMetric('m-red-regions', redness.regionCount, [3, 6]);
+      setMetric('m-dark', dPct, [7, 15]);
+      setMetric('m-dark-regions', darkSpots.regionCount, [2, 4]);
+      setMetric('m-edge', ePct, [10, 18]);
+
+      // Uniformity: inverse scale
+      const uEl = document.getElementById('m-uniformity');
+      uEl.textContent = uScore + '/100';
+      uEl.className = 'metric-value';
+      const uNum = parseFloat(uScore);
+      if (uNum < 40) uEl.classList.add('danger');
+      else if (uNum < 60) uEl.classList.add('warn');
+      else uEl.classList.add('ok');
+
+      // Indicators
+      const list = document.getElementById('indicators-list');
+      list.innerHTML = '';
+      indicators.forEach(ind => {
+        const div = document.createElement('div');
+        div.className = 'indicator-item';
+        div.textContent = ind;
+        list.appendChild(div);
+      });
+
+      // Score bar
+      document.getElementById('score-val').textContent = damageScore + '/100';
+      setTimeout(() => {
+        document.getElementById('score-fill').style.width = Math.min(100, damageScore) + '%';
+      }, 50);
+
+      // Summary
+      document.getElementById('summary-text').textContent = summary;
+    }
+
+    // ── Download annotated image ─────────────────────────
+    downloadBtn.addEventListener('click', () => {
+      const link = document.createElement('a');
+      link.download = 'detected_stomach.jpg';
+      link.href = outputCanvas.toDataURL('image/jpeg', 0.92);
+      link.click();
+    });
+  </script>
+</body>
+</html>
